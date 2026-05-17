@@ -474,14 +474,18 @@ footer a{color:var(--accent);text-decoration:none}
       </div>
 
       <div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px;font-weight:600">💸 How much do you want to invest?</div>
-      <div class="smart-budget">
-        <input type="number" id="smartAmount" placeholder="e.g. 5000" min="1">
-        <select id="smartCurrency">
-          <option value="USD">USD ($)</option>
-          <option value="INR">INR (₹)</option>
-          <option value="GBP">GBP (£)</option>
-          <option value="EUR">EUR (€)</option>
-        </select>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
+        <div style="display:flex;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;background:var(--surface2);transition:var(--ease);flex:1;min-width:200px;max-width:380px">
+          <span style="padding:10px 14px;color:var(--text3);font-size:1rem;border-right:1px solid var(--border);background:var(--surface3)">💰</span>
+          <input type="number" id="smartAmount" placeholder="e.g. 5000" min="1" style="flex:1;border:none;background:transparent;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--text);outline:none;width:100%">
+          <select id="smartCurrency" style="border:none;border-left:1px solid var(--border);background:var(--surface3);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);outline:none;cursor:pointer;white-space:nowrap">
+            <option value="USD">$ USD</option>
+            <option value="INR">₹ INR</option>
+            <option value="GBP">£ GBP</option>
+            <option value="EUR">€ EUR</option>
+          </select>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text3);line-height:1.5">Cards will show<br>actual gain/loss</div>
       </div>
 
       <div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px;font-weight:600">🎚️ How comfortable are you with risk?</div>
@@ -1204,8 +1208,6 @@ async function doSearch(q){
 }
 
 /* SMART SEARCH — paginated results, 3 per page */
-var smartPicks = [];      /* all 15 picks for current search */
-var smartPage  = 0;       /* current page index (0-4) */
 
 var PAGE_LABELS = [
   '🏆 Top 3 Recommendations',
@@ -1250,45 +1252,64 @@ function renderPicksPage(page){
     var d = liveData[p.sym] || {};
     var pr = d.price ? fmtPrice(d.price, d.currency||'USD') : '';
     var chg = d.changePercent || 0;
+    var amt = smartAmount;
+    var curSym = smartCurrencyCode==='INR' ? '&#x20B9;' : smartCurrencyCode==='GBP' ? '&pound;' : smartCurrencyCode==='EUR' ? '&euro;' : '$';
 
-    /* Calculate actual money gain/loss if user entered an amount */
+    /* Today's actual gain/loss on their investment */
     var moneyChangeHtml = '';
-    if(smartAmount > 0 && d.price && chg !== 0){
-      var moneyChange = smartAmount * (chg / 100);
-      var sign = moneyChange >= 0 ? '+' : '';
-      var curSym = smartCurrencyCode === 'INR' ? '&#x20B9;' : smartCurrencyCode === 'GBP' ? '&pound;' : smartCurrencyCode === 'EUR' ? '&euro;' : '$';
+    if(amt > 0 && d.price && chg !== 0){
+      var moneyChange = amt * (chg / 100);
+      var sign = moneyChange >= 0 ? '+' : '-';
       var col = moneyChange >= 0 ? 'var(--accent)' : 'var(--red)';
       var absVal = Math.abs(moneyChange);
-      var valStr = absVal >= 1000 ? absVal.toLocaleString('en-US',{maximumFractionDigits:2}) : absVal.toFixed(2);
-      moneyChangeHtml = '<span style="color:'+col+';font-size:0.78rem;font-weight:700;margin-left:6px">'+sign+curSym+valStr+' today</span>';
-    } else if(d.price && chg !== 0){
+      var valStr = absVal >= 1000 ? absVal.toLocaleString('en-US',{maximumFractionDigits:0}) : absVal.toFixed(2);
+      moneyChangeHtml = '<span style="color:'+col+';font-size:0.78rem;font-weight:700;margin-left:5px">'+sign+curSym+valStr+' today</span>';
+    } else {
       var col2 = chg >= 0 ? 'var(--accent)' : 'var(--red)';
-      moneyChangeHtml = '<span style="color:'+col2+';font-size:0.76rem">'+fmtChg(chg)+'</span>';
+      moneyChangeHtml = d.price ? '<span style="color:'+col2+';font-size:0.76rem">'+fmtChg(chg)+'</span>' : '';
     }
+
+    /* Convert percentage mentions in guidance text to actual money values */
+    function injectMoney(text){
+      if(!amt || amt <= 0) return text;
+      /* Replace patterns like "+25%" or "-15%" or "+30% rise" with money equivalent */
+      return text.replace(/([+-]?\d+(?:\.\d+)?)\s*%/g, function(match, pct){
+        var p2 = parseFloat(pct);
+        var money = amt * (Math.abs(p2) / 100);
+        var monStr = money >= 1000 ? money.toLocaleString('en-US',{maximumFractionDigits:0}) : money.toFixed(0);
+        var target = amt + (amt * p2 / 100);
+        var tgtStr = target >= 1000 ? target.toLocaleString('en-US',{maximumFractionDigits:0}) : target.toFixed(0);
+        var sign2 = p2 >= 0 ? '+' : '-';
+        return '<strong style="color:var(--text)">' + match + ' (' + sign2 + curSym + monStr + ' &rarr; ' + curSym + tgtStr + ')</strong>';
+      });
+    }
+
+    var profitHtml = injectMoney(p.profit);
+    var lossHtml   = injectMoney(p.loss);
+    var sellHtml   = injectMoney(p.sell);
+
     gridHtml +=
       '<div class="smart-pick-card" data-sym="'+p.sym+'">' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
           '<span style="font-size:1.3rem">'+a.ico+'</span>' +
-          '<div>' +
+          '<div style="min-width:0">' +
             '<div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.92rem">'+a.name+'</div>' +
             (pr ?
-              '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-top:2px">' +
+              '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin-top:2px">' +
                 '<span style="font-size:0.83rem;font-weight:600;color:var(--accent)">'+pr+'</span>' +
                 moneyChangeHtml +
               '</div>'
-            : '<div style="font-size:0.76rem;color:var(--text3)">Loading...</div>') +
-            (smartAmount > 0 && d.price ?
-              '<div style="font-size:0.7rem;color:var(--text3);margin-top:2px">Based on '+
-              (smartCurrencyCode==='INR'?'&#x20B9;':smartCurrencyCode==='GBP'?'&pound;':smartCurrencyCode==='EUR'?'&euro;':'$')+
-              smartAmount.toLocaleString()+' invested</div>'
+            : '<div style="font-size:0.76rem;color:var(--text3)">Loading price...</div>') +
+            (amt > 0 ?
+              '<div style="font-size:0.69rem;color:var(--text3);margin-top:3px;background:var(--surface2);display:inline-block;padding:2px 7px;border-radius:5px">'+curSym+amt.toLocaleString()+' invested</div>'
             : '') +
           '</div>' +
         '</div>' +
         '<div style="font-size:0.79rem;color:var(--text2);margin-bottom:10px;line-height:1.55">'+p.why+'</div>' +
-        '<div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:0.75rem;line-height:1.65">' +
-          '<div style="margin-bottom:5px"><span style="color:var(--accent);font-weight:700">&#x2713; Taking profit:</span> <span style="color:var(--text2)">'+p.profit+'</span></div>' +
-          '<div style="margin-bottom:5px"><span style="color:var(--red);font-weight:700">&#x26A0; If it drops:</span> <span style="color:var(--text2)">'+p.loss+'</span></div>' +
-          '<div><span style="color:var(--yellow);font-weight:700">&#x23F1; When to sell:</span> <span style="color:var(--text2)">'+p.sell+'</span></div>' +
+        '<div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:0.75rem;line-height:1.7">' +
+          '<div style="margin-bottom:6px"><span style="color:var(--accent);font-weight:700">&#x2713; Taking profit:</span> <span style="color:var(--text2)">'+profitHtml+'</span></div>' +
+          '<div style="margin-bottom:6px"><span style="color:var(--red);font-weight:700">&#x26A0; If it drops:</span> <span style="color:var(--text2)">'+lossHtml+'</span></div>' +
+          '<div><span style="color:var(--yellow);font-weight:700">&#x23F1; When to sell:</span> <span style="color:var(--text2)">'+sellHtml+'</span></div>' +
         '</div>' +
         '<div style="margin-top:10px;font-size:0.74rem;color:var(--accent);font-weight:600;text-align:center;border-top:1px solid var(--border);padding-top:8px">Tap for live analysis &#x2192;</div>' +
       '</div>';
