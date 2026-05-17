@@ -169,8 +169,26 @@ h1 em{font-style:normal;color:var(--accent)}
 .smart-result{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-top:18px;display:none}
 .smart-result.show{display:block}
 .smart-result-hd{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:10px;color:var(--accent)}
-.smart-result-text{font-size:0.88rem;color:var(--text2);line-height:1.7}
-.smart-result-picks{margin-top:14px}
+.smart-result-text{font-size:0.88rem;color:var(--text2);line-height:1.7;margin-bottom:18px}
+.smart-result-picks{margin-top:4px}
+
+/* Pagination nav */
+.picks-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
+.picks-nav-label{font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--accent2);flex:1;text-align:center}
+.picks-nav-btn{background:var(--surface3);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.8rem;padding:7px 16px;border-radius:9px;cursor:pointer;transition:var(--ease);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.picks-nav-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.picks-nav-btn:disabled{opacity:0.3;cursor:not-allowed}
+.picks-nav-btn.active{background:var(--accent);border-color:var(--accent);color:#070711}
+
+/* Page dots */
+.picks-dots{display:flex;gap:6px;justify-content:center;margin-top:14px}
+.picks-dot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:var(--ease)}
+.picks-dot.on{background:var(--accent);transform:scale(1.2)}
+
+/* Pick cards */
+.picks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.smart-pick-card{background:var(--surface3);border:1px solid var(--border);border-radius:11px;padding:14px;cursor:pointer;transition:var(--ease)}
+.smart-pick-card:hover{border-color:var(--accent);transform:translateY(-2px)}
 .pick-card{background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:var(--ease)}
 .pick-card:hover{border-color:var(--accent)}
 .pick-sym{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:2px}
@@ -907,6 +925,8 @@ var selectedStars = 0;
 var selectedSentiment = '';
 var smartGoal = '';
 var smartRisk = '';
+var smartPicks = [];
+var smartPage  = 0;
 
 /* UTILS */
 function _(id){ return document.getElementById(id); }
@@ -1228,80 +1248,171 @@ async function doSearch(q){
   } catch(e){ if(!local.length) _('searchDrop').classList.remove('open'); }
 }
 
-/* SMART SEARCH */
+/* SMART SEARCH — paginated results, 3 per page */
+var smartPicks = [];      /* all 15 picks for current search */
+var smartPage  = 0;       /* current page index (0-4) */
+
+var PAGE_LABELS = [
+  '🏆 Top 3 Recommendations',
+  '🥈 Next Best Options',
+  '🥉 Also Worth Considering',
+  '💡 More Options',
+  '➕ Additional Picks',
+];
+
+function renderPicksPage(page){
+  var resultPicks = _('smartResultPicks');
+  if(!resultPicks) return;
+
+  var totalPages = Math.ceil(smartPicks.length / 3);
+  var start = page * 3;
+  var row = smartPicks.slice(start, start + 3);
+  var label = PAGE_LABELS[page] || ('Page ' + (page+1));
+
+  /* Top label row with page counter */
+  var topHtml =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
+      '<div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.92rem;color:var(--accent2)">'+label+'</div>' +
+      '<div style="font-size:0.76rem;color:var(--text3)">'+(page+1)+' / '+totalPages+'</div>' +
+    '</div>';
+
+  /* Grid: [prev arrow?] + 3 cards + [next arrow?] */
+  var gridHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:stretch">';
+
+  /* Prev arrow card — only if not on first page */
+  if(page > 0){
+    gridHtml +=
+      '<div id="picksPrev" style="background:var(--surface3);border:1.5px solid var(--border);border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:var(--ease);padding:20px;min-height:180px">' +
+        '<div style="font-size:2.2rem;color:var(--accent2);font-weight:700;line-height:1">&#x2190;</div>' +
+        '<div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.82rem;color:var(--text2);text-align:center">'+PAGE_LABELS[page-1]+'</div>' +
+        '<div style="font-size:0.72rem;color:var(--text3)">Page '+(page)+' of '+totalPages+'</div>' +
+      '</div>';
+  }
+
+  /* Pick cards */
+  row.forEach(function(p){
+    var a = ASSETS.find(function(x){ return x.sym===p.sym; }) || {sym:p.sym, name:p.sym, type:'stock', ico:'📈'};
+    var d = liveData[p.sym] || {};
+    var pr = d.price ? fmtPrice(d.price, d.currency||'USD') : '';
+    var chg = d.changePercent || 0;
+    gridHtml +=
+      '<div class="smart-pick-card" data-sym="'+p.sym+'">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+          '<span style="font-size:1.3rem">'+a.ico+'</span>' +
+          '<div>' +
+            '<div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.92rem">'+a.name+'</div>' +
+            (pr ?
+              '<div style="font-size:0.83rem;font-weight:600;color:var(--accent)">'+pr+
+              ' <span style="font-size:0.73rem;color:'+(chg>=0?'var(--accent)':'var(--red)')+'">'+fmtChg(chg)+'</span></div>'
+            : '<div style="font-size:0.76rem;color:var(--text3)">Loading...</div>') +
+          '</div>' +
+        '</div>' +
+        '<div style="font-size:0.79rem;color:var(--text2);margin-bottom:10px;line-height:1.55">'+p.why+'</div>' +
+        '<div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:0.75rem;line-height:1.65">' +
+          '<div style="margin-bottom:5px"><span style="color:var(--accent);font-weight:700">&#x2713; Taking profit:</span> <span style="color:var(--text2)">'+p.profit+'</span></div>' +
+          '<div style="margin-bottom:5px"><span style="color:var(--red);font-weight:700">&#x26A0; If it drops:</span> <span style="color:var(--text2)">'+p.loss+'</span></div>' +
+          '<div><span style="color:var(--yellow);font-weight:700">&#x23F1; When to sell:</span> <span style="color:var(--text2)">'+p.sell+'</span></div>' +
+        '</div>' +
+        '<div style="margin-top:10px;font-size:0.74rem;color:var(--accent);font-weight:600;text-align:center;border-top:1px solid var(--border);padding-top:8px">Tap for live analysis &#x2192;</div>' +
+      '</div>';
+  });
+
+  /* Next arrow card — only if not on last page */
+  if(page < totalPages - 1){
+    gridHtml +=
+      '<div id="picksNext" style="background:var(--surface3);border:1.5px solid var(--accent);border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:var(--ease);padding:20px;min-height:180px">' +
+        '<div style="font-size:2.2rem;color:var(--accent);font-weight:700;line-height:1">&#x2192;</div>' +
+        '<div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.82rem;color:var(--text);text-align:center">'+PAGE_LABELS[page+1]+'</div>' +
+        '<div style="font-size:0.72rem;color:var(--text3)">Page '+(page+2)+' of '+totalPages+'</div>' +
+      '</div>';
+  }
+
+  gridHtml += '</div>';
+
+  /* Dot indicators */
+  var dotsHtml = '<div class="picks-dots">';
+  for(var i=0; i<totalPages; i++){
+    dotsHtml += '<div class="picks-dot'+(i===page?' on':'')+'" data-page="'+i+'"></div>';
+  }
+  dotsHtml += '</div>';
+
+  resultPicks.innerHTML = topHtml + gridHtml + dotsHtml;
+
+  /* Card clicks → open panel */
+  resultPicks.querySelectorAll('.smart-pick-card').forEach(function(card){
+    card.addEventListener('click', function(){ openPanel(this.getAttribute('data-sym')); });
+  });
+
+  /* Next arrow click */
+  var nextEl = _('picksNext');
+  if(nextEl){
+    nextEl.style.transition = 'var(--ease)';
+    nextEl.addEventListener('mouseenter', function(){ this.style.background='rgba(0,229,160,0.12)'; });
+    nextEl.addEventListener('mouseleave', function(){ this.style.background='var(--surface3)'; });
+    nextEl.addEventListener('click', function(){
+      if(smartPage < totalPages-1){ smartPage++; renderPicksPage(smartPage); _('smartResult').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    });
+  }
+
+  /* Prev arrow click */
+  var prevEl = _('picksPrev');
+  if(prevEl){
+    prevEl.addEventListener('mouseenter', function(){ this.style.borderColor='var(--accent2)'; this.style.background='rgba(124,108,255,0.08)'; });
+    prevEl.addEventListener('mouseleave', function(){ this.style.borderColor='var(--border)'; this.style.background='var(--surface3)'; });
+    prevEl.addEventListener('click', function(){
+      if(smartPage > 0){ smartPage--; renderPicksPage(smartPage); _('smartResult').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    });
+  }
+
+  /* Dot clicks */
+  resultPicks.querySelectorAll('.picks-dot').forEach(function(dot){
+    dot.addEventListener('click', function(){
+      smartPage = parseInt(this.getAttribute('data-page'));
+      renderPicksPage(smartPage);
+    });
+  });
+}
+
 async function runSmartSearch(){
   if(!smartGoal){ toast('Please pick a goal first'); return; }
   if(!smartRisk){ toast('Please pick your risk level'); return; }
 
-  var amount=_('smartAmount').value.trim();
-  var currency=_('smartCurrency').value;
-  var btn=_('smartGoBtn');
-  btn.textContent='Finding recommendations...'; btn.disabled=true;
+  var amount   = _('smartAmount').value.trim();
+  var currency = _('smartCurrency').value;
+  var btn      = _('smartGoBtn');
+  btn.textContent = 'Finding recommendations...';
+  btn.disabled = true;
 
-  var goalLabels={grow:'grow my money long-term',income:'earn regular income from dividends',safe:'keep my money safe',crypto:'explore cryptocurrency',india:'invest in Indian stocks and SIPs',trade:'do active short-term trading'};
-  var riskLabels={low:'low risk',mid:'medium risk',high:'high risk'};
-  var picks=(GOAL_PICKS[smartGoal]||{})[smartRisk]||[];
+  var goalLabels = {grow:'grow my money long-term', income:'earn regular income from dividends', safe:'keep my money safe', crypto:'explore cryptocurrency', india:'invest in Indian stocks and SIPs', trade:'do active short-term trading'};
+  var riskLabels = {low:'low risk', mid:'medium risk', high:'high risk'};
 
-  var amountStr=amount?(amount+' '+currency):'some money';
-  var prompt='You are a friendly financial educator helping a complete beginner in simple English. ' +
+  smartPicks = (GOAL_PICKS[smartGoal]||{})[smartRisk] || [];
+  smartPage  = 0;
+
+  var amountStr = amount ? (amount+' '+currency) : 'some money';
+  var prompt =
+    'You are a friendly financial educator helping a complete beginner in simple English. ' +
     'They want to '+goalLabels[smartGoal]+'. Their risk comfort is '+riskLabels[smartRisk]+'. ' +
     'They have '+amountStr+' to invest. ' +
-    'Give them 3-4 sentences of practical honest advice about what kinds of investments suit them. ' +
-    'Use plain English. No jargon. No asterisks. No markdown. Be encouraging but realistic about risk.';
+    'Give 3-4 sentences of practical honest advice about what kinds of investments suit them. ' +
+    'Plain English only. No jargon. No asterisks. No markdown. Encouraging but realistic.';
 
-  var aiText=await callAI(prompt);
+  var aiText = await callAI(prompt);
 
-  var result=_('smartResult');
-  var resultHd=_('smartResultHd');
-  var resultText=_('smartResultText');
-  var resultPicks=_('smartResultPicks');
+  var resultHd   = _('smartResultHd');
+  var resultText = _('smartResultText');
+  var result     = _('smartResult');
 
-  if(resultHd) resultHd.textContent='AI Advice for your goal';
-  if(resultText) resultText.textContent=aiText||'Based on your goal and risk level here are the best matching options. Click any card to see live data and full analysis.';
+  if(resultHd)   resultHd.textContent   = 'AI Advice for your goal';
+  if(resultText) resultText.textContent = aiText || 'Based on your goal and risk level, here are the best matching options. Use the arrows to browse all 15 picks. Tap any card for live analysis.';
 
-  if(resultPicks){
-    /* Group 15 picks into rows of 3 */
-    var rows=[];
-    for(var i=0;i<picks.length;i+=3){ rows.push(picks.slice(i,i+3)); }
-
-    var html='';
-    rows.forEach(function(row, rowIdx){
-      var rankLabel = rowIdx===0 ? '🏆 Top 3 Recommendations' : rowIdx===1 ? '🥈 Next Best Options' : rowIdx===2 ? '🥉 Also Worth Considering' : rowIdx===3 ? '💡 More Options' : '➕ Additional Picks';
-      html += '<div style="margin-bottom:6px;margin-top:'+(rowIdx===0?'0':'22px')+';font-family:Syne,sans-serif;font-weight:700;font-size:0.9rem;color:var(--accent2)">'+rankLabel+'</div>';
-      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:4px">';
-      row.forEach(function(p){
-        var a=ASSETS.find(function(x){ return x.sym===p.sym; })||{sym:p.sym,name:p.sym,type:'stock',ico:'📈'};
-        var d=liveData[p.sym]||{};
-        var pr=d.price?fmtPrice(d.price,d.currency||'USD'):'';
-        var chg=d.changePercent||0;
-        html+='<div style="background:var(--surface3);border:1px solid var(--border);border-radius:11px;padding:14px;cursor:pointer;transition:var(--ease)" class="smart-pick-card" data-sym="'+p.sym+'">'+
-          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-            '<span style="font-size:1.2rem">'+a.ico+'</span>'+
-            '<div>'+
-              '<div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.9rem">'+a.name+'</div>'+
-              (pr?'<div style="font-size:0.85rem;color:var(--accent);font-weight:600">'+pr+' <span style="font-size:0.75rem;color:'+(chg>=0?'var(--accent)':'var(--red)')+'">'+fmtChg(chg)+'</span></div>':'')+
-            '</div>'+
-          '</div>'+
-          '<div style="font-size:0.78rem;color:var(--text2);margin-bottom:10px;line-height:1.5">'+p.why+'</div>'+
-          '<div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:0.76rem;line-height:1.6">'+
-            '<div style="margin-bottom:4px"><span style="color:var(--accent);font-weight:700">&#x2713; If profitable:</span> <span style="color:var(--text2)">'+p.profit+'</span></div>'+
-            '<div style="margin-bottom:4px"><span style="color:var(--red);font-weight:700">&#x26A0; If losing:</span> <span style="color:var(--text2)">'+p.loss+'</span></div>'+
-            '<div><span style="color:var(--yellow);font-weight:700">&#x23F1; When to sell:</span> <span style="color:var(--text2)">'+p.sell+'</span></div>'+
-          '</div>'+
-          '<div style="margin-top:10px;font-size:0.74rem;color:var(--accent);font-weight:600;text-align:center">Tap for live analysis &rarr;</div>'+
-        '</div>';
-      });
-      html+='</div>';
-    });
-
-    resultPicks.innerHTML=html;
-    resultPicks.querySelectorAll('.smart-pick-card').forEach(function(card){
-      card.addEventListener('click',function(){ openPanel(this.getAttribute('data-sym')); });
-    });
-  }
+  renderPicksPage(0);
 
   if(result) result.classList.add('show');
-  btn.textContent='Get My AI Recommendations ✨'; btn.disabled=false;
+  result.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+  btn.textContent = 'Get My AI Recommendations ✨';
+  btn.disabled = false;
 }
 
 /* CHART */
