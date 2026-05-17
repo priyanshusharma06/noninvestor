@@ -880,6 +880,8 @@ var smartGoal = '';
 var smartRisk = '';
 var smartPicks = [];
 var smartPage  = 0;
+var smartAmount = 0;
+var smartCurrencyCode = 'USD';
 
 /* UTILS */
 function _(id){ return document.getElementById(id); }
@@ -1248,6 +1250,21 @@ function renderPicksPage(page){
     var d = liveData[p.sym] || {};
     var pr = d.price ? fmtPrice(d.price, d.currency||'USD') : '';
     var chg = d.changePercent || 0;
+
+    /* Calculate actual money gain/loss if user entered an amount */
+    var moneyChangeHtml = '';
+    if(smartAmount > 0 && d.price && chg !== 0){
+      var moneyChange = smartAmount * (chg / 100);
+      var sign = moneyChange >= 0 ? '+' : '';
+      var curSym = smartCurrencyCode === 'INR' ? '&#x20B9;' : smartCurrencyCode === 'GBP' ? '&pound;' : smartCurrencyCode === 'EUR' ? '&euro;' : '$';
+      var col = moneyChange >= 0 ? 'var(--accent)' : 'var(--red)';
+      var absVal = Math.abs(moneyChange);
+      var valStr = absVal >= 1000 ? absVal.toLocaleString('en-US',{maximumFractionDigits:2}) : absVal.toFixed(2);
+      moneyChangeHtml = '<span style="color:'+col+';font-size:0.78rem;font-weight:700;margin-left:6px">'+sign+curSym+valStr+' today</span>';
+    } else if(d.price && chg !== 0){
+      var col2 = chg >= 0 ? 'var(--accent)' : 'var(--red)';
+      moneyChangeHtml = '<span style="color:'+col2+';font-size:0.76rem">'+fmtChg(chg)+'</span>';
+    }
     gridHtml +=
       '<div class="smart-pick-card" data-sym="'+p.sym+'">' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
@@ -1255,9 +1272,16 @@ function renderPicksPage(page){
           '<div>' +
             '<div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.92rem">'+a.name+'</div>' +
             (pr ?
-              '<div style="font-size:0.83rem;font-weight:600;color:var(--accent)">'+pr+
-              ' <span style="font-size:0.73rem;color:'+(chg>=0?'var(--accent)':'var(--red)')+'">'+fmtChg(chg)+'</span></div>'
+              '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-top:2px">' +
+                '<span style="font-size:0.83rem;font-weight:600;color:var(--accent)">'+pr+'</span>' +
+                moneyChangeHtml +
+              '</div>'
             : '<div style="font-size:0.76rem;color:var(--text3)">Loading...</div>') +
+            (smartAmount > 0 && d.price ?
+              '<div style="font-size:0.7rem;color:var(--text3);margin-top:2px">Based on '+
+              (smartCurrencyCode==='INR'?'&#x20B9;':smartCurrencyCode==='GBP'?'&pound;':smartCurrencyCode==='EUR'?'&euro;':'$')+
+              smartAmount.toLocaleString()+' invested</div>'
+            : '') +
           '</div>' +
         '</div>' +
         '<div style="font-size:0.79rem;color:var(--text2);margin-bottom:10px;line-height:1.55">'+p.why+'</div>' +
@@ -1341,6 +1365,8 @@ async function runSmartSearch(){
 
   smartPicks = (GOAL_PICKS[smartGoal]||{})[smartRisk] || [];
   smartPage  = 0;
+  smartAmount = parseFloat(amount) || 0;
+  smartCurrencyCode = currency;
 
   var amountStr = amount ? (amount+' '+currency) : 'some money';
   var prompt =
