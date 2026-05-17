@@ -26,8 +26,6 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .nav-link{background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:6px 11px;border-radius:8px;cursor:pointer;transition:var(--ease)}
 .nav-link:hover{color:var(--text);background:var(--surface2)}
 .nav-link.active{color:var(--accent)}
-.nav-cta{background:var(--accent);border:none;color:#070711;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.82rem;padding:7px 16px;border-radius:9px;cursor:pointer;transition:var(--ease);flex-shrink:0}
-.nav-cta:hover{background:#00ffb2}
 .page{display:none;position:relative;z-index:1}
 .page.active{display:block}
 
@@ -312,10 +310,10 @@ h1 em{font-style:normal;color:var(--accent)}
 .adv-hero h2{font-family:'Syne',sans-serif;font-size:clamp(1.7rem,4vw,2.6rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:14px}
 .adv-hero h2 em{font-style:normal;color:var(--accent)}
 .stats-bar{position:relative;z-index:1;max-width:900px;margin:0 auto 44px;padding:0 24px}
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:13px}
-.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;text-align:center}
-.stat-n{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;color:var(--accent);letter-spacing:-0.02em}
-.stat-l{color:var(--text2);font-size:0.82rem;margin-top:4px}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 10px;text-align:center;overflow:hidden;min-width:0}
+.stat-n{font-family:'Syne',sans-serif;font-size:clamp(1.2rem,2.5vw,1.75rem);font-weight:800;color:var(--accent);letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-l{color:var(--text2);font-size:0.75rem;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pkg-section{position:relative;z-index:1;max-width:900px;margin:0 auto 44px;padding:0 24px}
 .pkg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:20px}
 .pkg-card{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:24px;transition:var(--ease);position:relative;overflow:hidden}
@@ -362,6 +360,10 @@ footer a{color:var(--accent);text-decoration:none}
   .ad-banner{flex-direction:column;align-items:flex-start}
   .dev-card{flex-direction:column}
   .smart-goals{grid-template-columns:repeat(2,1fr)}
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:400px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -371,11 +373,10 @@ footer a{color:var(--accent);text-decoration:none}
   <a class="logo" id="navLogo" href="#"><div class="logo-mark">📈</div>Non<em>Investor</em></a>
   <div class="nav-links">
     <button class="nav-link active" data-page="home">Home</button>
-    <button class="nav-link" data-page="smart">Smart Search</button>
+    <button class="nav-link" data-page="smart">What Should I Buy?</button>
     <button class="nav-link" data-page="about">About</button>
     <button class="nav-link" data-page="advertise">Advertise</button>
   </div>
-  <button class="nav-cta" id="navCta">Search Assets</button>
 </nav>
 
 <!-- ===== HOME ===== -->
@@ -387,12 +388,12 @@ footer a{color:var(--accent);text-decoration:none}
 
     <div class="search-mode-wrap">
       <button class="mode-btn active" data-mode="general">🔍 Search by name</button>
-      <button class="mode-btn" data-mode="goal">🎯 Search by goal</button>
+      <button class="mode-btn" data-mode="goal">🤔 What should I buy?</button>
     </div>
 
     <div class="smart-mode-banner" id="smartBanner">
-      <strong>Goal mode on:</strong> Tell us what you want to achieve and we will find the best options for you.
-      <a href="#" id="smartBannerLink" style="color:var(--accent);margin-left:6px">Go to Smart Search &rarr;</a>
+      <strong>Not sure what to invest in?</strong> Answer a few simple questions and our AI will recommend the best options for your goal.
+      <a href="#" id="smartBannerLink" style="color:var(--accent);margin-left:6px">Get personalised recommendations &rarr;</a>
     </div>
 
     <div class="search-wrap">
@@ -455,12 +456,12 @@ footer a{color:var(--accent);text-decoration:none}
   </section>
 </div>
 
-<!-- ===== SMART SEARCH PAGE ===== -->
+<!-- ===== WHAT SHOULD I BUY PAGE ===== -->
 <div class="page" id="page-smart">
   <section class="hero" style="padding-bottom:20px">
-    <div class="hero-badge"><span class="badge-dot"></span> AI-Powered Goal Analysis</div>
-    <h1>What are you<br>trying to <em>achieve?</em></h1>
-    <p class="hero-sub">Tell us your goal, how much you want to invest, and your risk comfort. Our AI will recommend what to buy, what to avoid, and explain everything simply.</p>
+    <div class="hero-badge"><span class="badge-dot"></span> AI-Powered Investment Finder</div>
+    <h1>What should<br>I <em>invest in?</em></h1>
+    <p class="hero-sub">Not sure where to start? Tell us what you want to achieve and how much risk you are comfortable with. Our AI will recommend exactly what to consider buying &mdash; in plain English.</p>
   </section>
 
   <div class="smart-panel">
@@ -597,11 +598,47 @@ footer a{color:var(--accent);text-decoration:none}
       </div>
     </div>
 
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center;margin-bottom:32px">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:8px">Have feedback or a question?</div>
       <div style="color:var(--text2);font-size:0.875rem;margin-bottom:14px">Use the Advertise page contact form to get in touch &mdash; we read every message.</div>
-      <button class="nav-cta" id="aboutContactBtn" style="padding:10px 24px;font-size:0.9rem">Contact Us</button>
+      <button class="nav-link" id="aboutContactBtn" style="background:var(--accent);color:#070711;font-weight:700;padding:10px 24px;border-radius:9px;font-size:0.9rem;border:none;cursor:pointer">Contact Us</button>
     </div>
+
+    <!-- APP REVIEWS SECTION -->
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:6px">⭐ User Reviews</div>
+    <div style="color:var(--text2);font-size:0.855rem;margin-bottom:20px">What do people think about NonInvestor? Share your honest experience.</div>
+
+    <!-- Review form -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px" id="appReviewForm">
+      <div style="font-weight:600;font-size:0.95rem;margin-bottom:16px">Leave a review about this app</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Your Name</label>
+          <input type="text" id="arName" maxlength="40" placeholder="Your name or nickname" style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:10px 13px;font-family:'DM Sans',sans-serif;font-size:0.875rem;color:var(--text);outline:none">
+        </div>
+        <div>
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Star Rating</label>
+          <div id="arStarRow" style="display:flex;gap:5px;padding:10px 0">
+            <span class="ar-star" data-star="1" style="font-size:1.4rem;cursor:pointer;opacity:0.3;transition:var(--ease)">★</span>
+            <span class="ar-star" data-star="2" style="font-size:1.4rem;cursor:pointer;opacity:0.3;transition:var(--ease)">★</span>
+            <span class="ar-star" data-star="3" style="font-size:1.4rem;cursor:pointer;opacity:0.3;transition:var(--ease)">★</span>
+            <span class="ar-star" data-star="4" style="font-size:1.4rem;cursor:pointer;opacity:0.3;transition:var(--ease)">★</span>
+            <span class="ar-star" data-star="5" style="font-size:1.4rem;cursor:pointer;opacity:0.3;transition:var(--ease)">★</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Your Review</label>
+        <textarea id="arText" maxlength="600" rows="4" placeholder="What do you think of NonInvestor? Did it help you understand investing? Is it easy to use? Any suggestions?" style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:0.875rem;color:var(--text);outline:none;resize:vertical;line-height:1.6"></textarea>
+      </div>
+
+      <button id="arSubmitBtn" style="background:var(--accent);border:none;color:#070711;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;padding:11px 26px;border-radius:9px;cursor:pointer;transition:var(--ease)">Post Review</button>
+    </div>
+
+    <!-- Reviews list -->
+    <div id="appReviewList" style="display:flex;flex-direction:column;gap:12px"></div>
 
   </div>
 </div>
@@ -1271,26 +1308,8 @@ async function openPanel(sym){
     '<div class="wtb-title">&#x1F3EA; Where to buy '+sym+'</div>'+
     '<div class="wtb-grid">'+wtbHtml+'</div>'+
     '<p style="font-size:0.72rem;color:var(--text2);margin-bottom:22px">Not affiliated with any platform. Always research before investing. See our <a href="#" style="color:var(--accent)" id="disclaimerLink">full disclaimer</a>.</p>'+
-
-    /* COMMUNITY REVIEWS */
-    '<div class="reviews-section">'+
-      '<div class="reviews-title">&#x1F4AC; Community Reviews <span class="reviews-count" id="reviewCount">'+reviews.length+'</span></div>'+
-      '<div class="review-form">'+
-        '<div class="review-form-top">'+
-          '<input class="review-name-input" type="text" id="reviewName" placeholder="Your name or nickname" maxlength="30">'+
-          '<div class="review-sentiment">'+
-            '<button class="sentiment-btn" data-s="bull">📈 Bullish</button>'+
-            '<button class="sentiment-btn" data-s="bear">📉 Bearish</button>'+
-            '<button class="sentiment-btn" data-s="hold">➡️ Neutral</button>'+
-          '</div>'+
-        '</div>'+
-        '<div class="star-row" id="starRow">'+
-          '<span class="star" data-star="1">★</span><span class="star" data-star="2">★</span><span class="star" data-star="3">★</span><span class="star" data-star="4">★</span><span class="star" data-star="5">★</span>'+
-        '</div>'+
-        '<textarea class="review-textarea" id="reviewText" placeholder="Share your honest thoughts on '+sym+'. Do you think it\'s a good investment? Why? (min 10 characters)" maxlength="500"></textarea>'+
-        '<button class="review-submit" id="reviewSubmitBtn">Post Review</button>'+
-      '</div>'+
-      '<div class="review-list" id="reviewList"></div>'+
+    '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:14px 16px;font-size:0.84rem;color:var(--text2);text-align:center">'+
+      '&#x1F4AC; Used NonInvestor? <a href="#" id="leaveReviewLink" style="color:var(--accent);font-weight:600">Leave a review about the app &rarr;</a>'+
     '</div>';
 
   /* attach events */
@@ -1301,32 +1320,11 @@ async function openPanel(sym){
       renderChart(sym,currentTF,p>=0);
     });
   });
-  document.querySelectorAll('.sentiment-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      document.querySelectorAll('.sentiment-btn').forEach(function(b){ b.className='sentiment-btn'; });
-      selectedSentiment=this.getAttribute('data-s');
-      this.className='sentiment-btn active-'+selectedSentiment;
-    });
-  });
-  document.querySelectorAll('.star').forEach(function(star){
-    star.addEventListener('click',function(){
-      selectedStars=parseInt(this.getAttribute('data-star'));
-      document.querySelectorAll('.star').forEach(function(s){ s.classList.toggle('lit',parseInt(s.getAttribute('data-star'))<=selectedStars); });
-    });
-    star.addEventListener('mouseover',function(){
-      var n=parseInt(this.getAttribute('data-star'));
-      document.querySelectorAll('.star').forEach(function(s){ s.style.opacity=parseInt(s.getAttribute('data-star'))<=n?'1':'0.3'; });
-    });
-    star.addEventListener('mouseout',function(){
-      document.querySelectorAll('.star').forEach(function(s){ s.style.opacity=parseInt(s.getAttribute('data-star'))<=selectedStars?'1':'0.3'; });
-    });
-  });
-  var rsBtn=_('reviewSubmitBtn');
-  if(rsBtn) rsBtn.addEventListener('click',function(){ submitReview(sym); });
   var dlLink=_('disclaimerLink');
   if(dlLink) dlLink.addEventListener('click',function(e){ e.preventDefault(); _('overlay').classList.remove('open'); document.body.style.overflow=''; showPage('about'); });
+  var lrLink=_('leaveReviewLink');
+  if(lrLink) lrLink.addEventListener('click',function(e){ e.preventDefault(); _('overlay').classList.remove('open'); document.body.style.overflow=''; showPage('about'); setTimeout(function(){ var el=_('appReviewForm'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },400); });
 
-  renderReviews(sym);
   renderChart(sym,'5d',p>=0);
   renderAIDebate(sym,a.name,d.price||0,p,cur);
 }
@@ -1338,6 +1336,7 @@ function showPage(name){
   var pg=_('page-'+name); if(pg) pg.classList.add('active');
   var lnk=document.querySelector('.nav-link[data-page="'+name+'"]'); if(lnk) lnk.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
+  if(name==='about') renderAppReviews();
 }
 
 /* FORM */
@@ -1358,6 +1357,75 @@ async function handleForm(){
   } catch(e){ toast('Something went wrong. Please try again.'); btn.textContent='Send Enquiry 🚀'; btn.disabled=false; }
 }
 
+/* APP REVIEWS (About page) - stored in localStorage */
+var arStars = 0;
+
+function loadAppReviews(){ try{ var r=localStorage.getItem('app_reviews'); return r?JSON.parse(r):[]; } catch(e){ return []; } }
+function saveAppReviews(arr){ try{ localStorage.setItem('app_reviews',JSON.stringify(arr)); } catch(e){} }
+
+function renderAppReviews(){
+  var container=_('appReviewList'); if(!container) return;
+  var reviews=loadAppReviews();
+  if(!reviews.length){
+    container.innerHTML='<div style="color:var(--text3);font-size:0.855rem;text-align:center;padding:16px 0">No reviews yet &mdash; be the first!</div>';
+    return;
+  }
+  container.innerHTML=reviews.slice().reverse().map(function(rv){
+    var stars=''; for(var s=1;s<=5;s++) stars+=(s<=rv.stars?'<span style="color:var(--yellow)">★</span>':'<span style="color:var(--text3)">★</span>');
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          '<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-family:Syne,sans-serif;font-weight:700;font-size:0.85rem;color:#070711">'+rv.name.substring(0,2).toUpperCase()+'</div>'+
+          '<div><div style="font-weight:600;font-size:0.875rem">'+rv.name+'</div><div style="font-size:0.7rem;color:var(--text3)">'+timeAgo(rv.ts)+'</div></div>'+
+        '</div>'+
+        '<div style="font-size:0.95rem">'+stars+'</div>'+
+      '</div>'+
+      '<div style="font-size:0.875rem;color:var(--text2);line-height:1.65">'+rv.text+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+async function submitAppReview(){
+  var nameEl=_('arName'), textEl=_('arText');
+  var name=nameEl?nameEl.value.trim():'';
+  var text=textEl?textEl.value.trim():'';
+  if(!name){ toast('Please enter your name'); return; }
+  if(!arStars){ toast('Please select a star rating'); return; }
+  if(!text||text.length<10){ toast('Please write at least 10 characters'); return; }
+
+  var btn=_('arSubmitBtn');
+  btn.textContent='Sending...'; btn.disabled=true;
+
+  try{
+    /* Send to Formspree */
+    var res=await fetch('https://formspree.io/f/xkoewyvg',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({name:name,stars:arStars,review:text,source:'NonInvestor App Review'})
+    });
+    if(!res.ok) throw new Error('fail');
+
+    /* Also save locally so it shows immediately on the page */
+    var reviews=loadAppReviews();
+    reviews.push({name:name,stars:arStars,text:text,ts:Date.now()});
+    saveAppReviews(reviews);
+
+    if(nameEl) nameEl.value='';
+    if(textEl) textEl.value='';
+    arStars=0;
+    document.querySelectorAll('.ar-star').forEach(function(s){ s.style.opacity='0.3'; s.style.color=''; });
+
+    btn.textContent='Review Sent! ✓';
+    btn.style.background='var(--accent2)';
+    toast('Thank you for your feedback! Your review is now live.');
+    renderAppReviews();
+    setTimeout(function(){ btn.textContent='Post Review'; btn.disabled=false; btn.style.background=''; },3000);
+  } catch(e){
+    toast('Something went wrong. Please try again.');
+    btn.textContent='Post Review'; btn.disabled=false;
+  }
+}
+
 /* BOOT */
 document.addEventListener('DOMContentLoaded',function(){
 
@@ -1365,10 +1433,29 @@ document.addEventListener('DOMContentLoaded',function(){
     btn.addEventListener('click',function(){ showPage(this.getAttribute('data-page')); });
   });
   _('navLogo').addEventListener('click',function(e){ e.preventDefault(); showPage('home'); });
-  _('navCta').addEventListener('click',function(){ showPage('home'); setTimeout(function(){ _('searchInput').focus(); },200); });
   _('footerAdLink').addEventListener('click',function(e){ e.preventDefault(); showPage('advertise'); });
   _('footerAbout').addEventListener('click',function(e){ e.preventDefault(); showPage('about'); });
   _('aboutContactBtn').addEventListener('click',function(){ showPage('advertise'); });
+
+  /* App review stars */
+  document.querySelectorAll('.ar-star').forEach(function(star){
+    star.addEventListener('click',function(){
+      arStars=parseInt(this.getAttribute('data-star'));
+      document.querySelectorAll('.ar-star').forEach(function(s){ s.style.opacity=parseInt(s.getAttribute('data-star'))<=arStars?'1':'0.3'; s.style.color=parseInt(s.getAttribute('data-star'))<=arStars?'var(--yellow)':''; });
+    });
+    star.addEventListener('mouseover',function(){
+      var n=parseInt(this.getAttribute('data-star'));
+      document.querySelectorAll('.ar-star').forEach(function(s){ s.style.opacity=parseInt(s.getAttribute('data-star'))<=n?'1':'0.3'; });
+    });
+    star.addEventListener('mouseout',function(){
+      document.querySelectorAll('.ar-star').forEach(function(s){ s.style.opacity=parseInt(s.getAttribute('data-star'))<=arStars?'1':'0.3'; });
+    });
+  });
+  var arBtn=_('arSubmitBtn');
+  if(arBtn) arBtn.addEventListener('click',submitAppReview);
+
+  /* Render app reviews on load */
+  renderAppReviews();
 
   /* Search mode buttons */
   document.querySelectorAll('.mode-btn').forEach(function(btn){
