@@ -1269,67 +1269,54 @@ function renderPicksPage(page){
       moneyChangeHtml = d.price ? '<span style="color:'+col2+';font-size:0.76rem">'+fmtChg(chg)+'</span>' : '';
     }
 
-    /* Convert percentage mentions in guidance text to actual money values.
-       Two-pass: first handle ranges like +25-30%, then single %s.
-       Use a placeholder token between passes to prevent double-processing. */
-    function moneyStr(pct, baseAmt){
-      var money = Math.abs(baseAmt * pct / 100);
-      var target = baseAmt + (baseAmt * pct / 100);
+    /* Money injection — context aware, no sign detection needed */
+    function calcMoney(pct, baseAmt, positive){
+      var absPct = Math.abs(parseFloat(pct));
+      var effectivePct = positive ? absPct : -absPct;
+      var money = Math.abs(baseAmt * absPct / 100);
+      var target = baseAmt + (baseAmt * effectivePct / 100);
       var mStr = money >= 1000 ? money.toLocaleString('en-US',{maximumFractionDigits:0}) : money.toFixed(0);
       var tStr = target >= 1000 ? target.toLocaleString('en-US',{maximumFractionDigits:0}) : target.toFixed(0);
-      var sc = pct >= 0 ? '+' : '-';
-      return '(' + sc + curSym + mStr + ' \u2192 ' + curSym + tStr + ')';
+      var sc = positive ? '+' : '-';
+      return sc + curSym + mStr + ' \u2192 ' + curSym + tStr;
     }
 
-    function injectMoney(text, forceNeg){
+    function injectContext(text, positive){
       if(!amt || amt <= 0) return text;
 
-      /* Pass 1: ranges like +25-30% or 25-30% */
-      var PLACEHOLDER = '\x00DONE\x00';
-      text = text.replace(/([+-]?)(\d+(?:\.\d+)?)\s*[-\u2013]\s*(\d+(?:\.\d+)?)\s*%/g,
-        function(match, sign, lo, hi){
-          var loP = parseFloat(lo) * (sign === '-' ? -1 : 1);
-          var hiP = parseFloat(hi) * (sign === '-' ? -1 : 1);
-          /* For a range like +25-30, both numbers are positive gains */
-          var loMoney = Math.abs(amt * loP / 100);
-          var hiMoney = Math.abs(amt * hiP / 100);
-          var loTarget = amt + (amt * loP / 100);
-          var hiTarget = amt + (amt * hiP / 100);
+      /* Pass 1 — ranges like 25-30% or +25-30% — replace whole range, mark done */
+      var DONE = '\u0000DONE\u0000';
+      text = text.replace(/[+-]?(\d+(?:\.\d+)?)\s*[-\u2013to]+\s*(\d+(?:\.\d+)?)\s*%/g,
+        function(match, lo, hi){
+          var loVal = calcMoney(lo, amt, positive);
+          var hiVal = calcMoney(hi, amt, positive);
+          /* Extract just the target values for the range */
+          var loMoney = Math.abs(amt * parseFloat(lo) / 100);
+          var hiMoney = Math.abs(amt * parseFloat(hi) / 100);
+          var loTarget = amt + (positive ? loMoney : -loMoney);
+          var hiTarget = amt + (positive ? hiMoney : -hiMoney);
           var loM = loMoney.toFixed(0);
           var hiM = hiMoney.toFixed(0);
           var loT = loTarget.toFixed(0);
           var hiT = hiTarget.toFixed(0);
-          var sc = loP >= 0 ? '+' : '-';
-          var inner = sc+curSym+loM+'\u2013'+sc+curSym+hiM+' \u2192 '+curSym+loT+'\u2013'+curSym+hiT;
-          return '<strong style="color:var(--text)">'+match+' ('+inner+')</strong>'+PLACEHOLDER;
+          var sc = positive ? '+' : '-';
+          return '<strong style="color:var(--text)">' + match +
+            ' (' + sc + curSym + loM + ' to ' + sc + curSym + hiM +
+            ' \u2192 ' + curSym + loT + ' to ' + curSym + hiT + ')</strong>' + DONE;
         });
 
-      /* Pass 2: single percentages — skip anything already followed by placeholder */
-      text = text.replace(/([+-]?)(\d+(?:\.\d+)?)%(?!\x00DONE\x00)/g,
-        function(match, sign, numStr){
-          var pct = parseFloat(numStr);
-          if(isNaN(pct) || pct === 0) return match;
-          var isNeg = (sign === '-') || forceNeg;
-          var effectivePct = isNeg ? -pct : pct;
-          return '<strong style="color:var(--text)">'+match+' '+moneyStr(effectivePct, amt)+'</strong>';
+      /* Pass 2 — single % not already processed */
+      text = text.replace(/[+-]?(\d+(?:\.\d+)?)%(?!\u0000DONE\u0000)/g,
+        function(match, numStr){
+          var val = calcMoney(numStr, amt, positive);
+          return '<strong style="color:var(--text)">' + match + ' (' + val + ')</strong>';
         });
 
-      /* Remove placeholders */
-      text = text.split(PLACEHOLDER).join('');
-      return text;
+      return text.split(DONE).join('');
     }
 
-    /* Loss context: pre-convert "Down X%" to "Down -X%" so it reads as negative */
-    function injectMoneyLoss(text){
-      if(!amt || amt <= 0) return text;
-      var processed = text.replace(/\bDown\s+(\d+(?:\.\d+)?)\s*%/gi,
-        function(m, n){ return 'Down -'+n+'%'; });
-      return injectMoney(processed, false);
-    }
-
-    var profitHtml = injectMoney(p.profit);
-    var lossHtml   = injectMoneyLoss(p.loss);
-    var sellHtml   = injectMoney(p.sell);
+    var profitHtml = injectContext(p.profit, true);
+    var lossHtml   = injectContext(p.loss,   false);
 
     gridHtml +=
       '<div class="smart-pick-card" data-sym="'+p.sym+'">' +
@@ -1350,9 +1337,8 @@ function renderPicksPage(page){
         '</div>' +
         '<div style="font-size:0.79rem;color:var(--text2);margin-bottom:10px;line-height:1.55">'+p.why+'</div>' +
         '<div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:0.75rem;line-height:1.7">' +
-          '<div style="margin-bottom:6px"><span style="color:var(--accent);font-weight:700">&#x2713; Taking profit:</span> <span style="color:var(--text2)">'+profitHtml+'</span></div>' +
-          '<div style="margin-bottom:6px"><span style="color:var(--red);font-weight:700">&#x26A0; If it drops:</span> <span style="color:var(--text2)">'+lossHtml+'</span></div>' +
-          '<div><span style="color:var(--yellow);font-weight:700">&#x23F1; When to sell:</span> <span style="color:var(--text2)">'+sellHtml+'</span></div>' +
+          '<div style="margin-bottom:6px"><span style="color:var(--accent);font-weight:700">&#x2713; If it goes up:</span> <span style="color:var(--text2)">'+profitHtml+'</span></div>' +
+          '<div><span style="color:var(--red);font-weight:700">&#x26A0; If it drops:</span> <span style="color:var(--text2)">'+lossHtml+'</span></div>' +
         '</div>' +
         '<div style="margin-top:10px;font-size:0.74rem;color:var(--accent);font-weight:600;text-align:center;border-top:1px solid var(--border);padding-top:8px">Tap for live analysis &#x2192;</div>' +
       '</div>';
