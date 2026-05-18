@@ -1308,32 +1308,37 @@ function renderPicksPage(page){
     function injectContext(text, positive){
       if(!amt || amt <= 0) return text;
 
-      /* Pass 1 — ranges like 25-30% or +25-30% — replace whole range, mark done */
-      var DONE = '\u0000DONE\u0000';
-      text = text.replace(/[+-]?(\d+(?:\.\d+)?)\s*[-\u2013to]+\s*(\d+(?:\.\d+)?)\s*%/g,
+      var DONE = '\u0000D\u0000';
+
+      /* Pass 1 — ranges like 25-30% or +25-30% — ONE bracket, mark % with DONE */
+      text = text.replace(/[+-]?(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*%/g,
         function(match, lo, hi){
           var loMoney = Math.abs(amt * parseFloat(lo) / 100);
           var hiMoney = Math.abs(amt * parseFloat(hi) / 100);
           var loTarget = amt + (positive ? loMoney : -loMoney);
           var hiTarget = amt + (positive ? hiMoney : -hiMoney);
-          var loM = loMoney.toFixed(0);
-          var hiM = hiMoney.toFixed(0);
-          var loT = loTarget.toFixed(0);
-          var hiT = hiTarget.toFixed(0);
           var sc = positive ? '+' : '-';
-          /* Only one bracket: shows money gain/loss range → target range */
-          return '<strong style="color:var(--text)">' + match +
-            ' (' + sc + curSym + loM + ' to ' + sc + curSym + hiM +
-            ' \u2192 ' + curSym + loT + ' to ' + curSym + hiT + ')</strong>' + DONE;
+          /* Append DONE right after % so Pass 2 skips this match */
+          return match + DONE +
+            ' <strong style="color:var(--text)">(' +
+            sc + curSym + loMoney.toFixed(0) + ' to ' + sc + curSym + hiMoney.toFixed(0) +
+            ' \u2192 ' + curSym + loTarget.toFixed(0) + ' to ' + curSym + hiTarget.toFixed(0) +
+            ')</strong>';
         });
 
-      /* Pass 2 — single % not already processed */
-      text = text.replace(/[+-]?(\d+(?:\.\d+)?)%(?!\u0000DONE\u0000)/g,
+      /* Pass 2 — single % only — skip anything already marked with DONE */
+      text = text.replace(/[+-]?(\d+(?:\.\d+)?)%(?!\u0000D\u0000)/g,
         function(match, numStr){
-          var val = calcMoney(numStr, amt, positive);
-          return '<strong style="color:var(--text)">' + match + ' (' + val + ')</strong>';
+          var pct = Math.abs(parseFloat(numStr));
+          var money = amt * pct / 100;
+          var target = amt + (positive ? money : -money);
+          var sc = positive ? '+' : '-';
+          var mStr = money >= 1000 ? money.toLocaleString('en-US',{maximumFractionDigits:0}) : money.toFixed(0);
+          var tStr = target >= 1000 ? target.toLocaleString('en-US',{maximumFractionDigits:0}) : target.toFixed(0);
+          return match + ' <strong style="color:var(--text)">(' + sc + curSym + mStr + ' \u2192 ' + curSym + tStr + ')</strong>';
         });
 
+      /* Remove DONE markers */
       return text.split(DONE).join('');
     }
 
