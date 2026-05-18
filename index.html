@@ -320,15 +320,15 @@ footer a{color:var(--accent);text-decoration:none}
 /* SIDE DRAWER */
 #drawer{position:fixed;top:0;left:-300px;width:min(280px,80vw);height:100vh;background:var(--surface);border-right:1px solid var(--border);z-index:401;transition:left 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden}
 #drawer.open{left:0}
-.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px;border-bottom:1px solid var(--border)}
-.drawer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;color:var(--text)}
-.drawer-close{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;display:grid;place-items:center;transition:var(--ease)}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.drawer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;color:var(--text)}
+.drawer-close{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:8px;font-size:15px;cursor:pointer;display:grid;place-items:center;transition:var(--ease);flex-shrink:0}
 .drawer-close:hover{color:var(--text)}
-.drawer-nav{display:flex;flex-direction:column;padding:16px 12px;gap:4px;flex:1}
-.drawer-link{background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;padding:13px 16px;border-radius:10px;cursor:pointer;text-align:left;transition:var(--ease);width:100%}
+.drawer-nav{display:flex;flex-direction:column;padding:10px 10px 10px;gap:3px;flex-shrink:0}
+.drawer-link{background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;padding:12px 14px;border-radius:10px;cursor:pointer;text-align:left;transition:var(--ease);width:100%}
 .drawer-link:hover{background:var(--surface2);color:var(--text)}
 .drawer-link.active{background:rgba(0,229,160,0.08);color:var(--accent);font-weight:600}
-.drawer-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:0.78rem;color:var(--text3);text-align:center}
+.drawer-footer{padding:14px 16px;border-top:1px solid var(--border);font-size:0.76rem;color:var(--text3);text-align:center;margin-top:auto}
 
 @media(max-width:860px){
   .hamburger{display:flex}
@@ -1364,8 +1364,9 @@ function renderPicksPage(page){
         '</div>' +
         '<div style="font-size:0.79rem;color:var(--text2);margin-bottom:10px;line-height:1.55">'+p.why+'</div>' +
         '<div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:0.75rem;line-height:1.7">' +
-          '<div style="margin-bottom:6px"><span style="color:var(--accent);font-weight:700">&#x2713; If it goes up:</span> <span style="color:var(--text2)">'+profitHtml+'</span></div>' +
-          '<div><span style="color:var(--red);font-weight:700">&#x26A0; If it drops:</span> <span style="color:var(--text2)">'+lossHtml+'</span></div>' +
+          '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:8px">&#x23F1; When to Sell</div>' +
+          '<div style="margin-bottom:6px"><span style="color:var(--accent);font-weight:700">&#x2197; If it goes up:</span> <span style="color:var(--text2)">'+profitHtml+'</span></div>' +
+          '<div><span style="color:var(--red);font-weight:700">&#x2198; If it drops:</span> <span style="color:var(--text2)">'+lossHtml+'</span></div>' +
         '</div>' +
         '<div style="margin-top:10px;font-size:0.74rem;color:var(--accent);font-weight:600;text-align:center;border-top:1px solid var(--border);padding-top:8px">Tap for live analysis &#x2192;</div>' +
       '</div>';
