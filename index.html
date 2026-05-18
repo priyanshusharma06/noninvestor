@@ -320,11 +320,11 @@ footer a{color:var(--accent);text-decoration:none}
 /* SIDE DRAWER */
 #drawer{position:fixed;top:0;left:-300px;width:min(280px,80vw);height:100vh;background:var(--surface);border-right:1px solid var(--border);z-index:401;transition:left 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden}
 #drawer.open{left:0}
-.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;min-height:60px}
 .drawer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;color:var(--text)}
 .drawer-close{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:8px;font-size:15px;cursor:pointer;display:grid;place-items:center;transition:var(--ease);flex-shrink:0}
 .drawer-close:hover{color:var(--text)}
-.drawer-nav{display:flex;flex-direction:column;padding:10px 10px 10px;gap:3px;flex-shrink:0}
+.drawer-nav{display:flex;flex-direction:column;padding:12px 10px 10px;gap:3px;flex-shrink:0;overflow-y:auto}
 .drawer-link{background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;padding:12px 14px;border-radius:10px;cursor:pointer;text-align:left;transition:var(--ease);width:100%}
 .drawer-link:hover{background:var(--surface2);color:var(--text)}
 .drawer-link.active{background:rgba(0,229,160,0.08);color:var(--accent);font-weight:600}
@@ -362,16 +362,16 @@ footer a{color:var(--accent);text-decoration:none}
 <div id="drawerOverlay"></div>
 <div id="drawer">
   <div class="drawer-header">
-    <div class="drawer-logo"><div class="logo-mark">📈</div>Non<em style="color:var(--accent)">Investor</em></div>
+    <div class="drawer-logo"><div class="logo-mark" style="width:26px;height:26px;font-size:13px">📈</div>Non<em style="color:var(--accent)">Investor</em></div>
     <button class="drawer-close" id="drawerClose">&#x2715;</button>
   </div>
-  <nav class="drawer-nav">
+  <div class="drawer-nav">
     <button class="drawer-link active" data-page="home">🏠 Home</button>
     <button class="drawer-link" data-page="smart">🤔 What Should I Buy?</button>
     <button class="drawer-link" data-page="about">ℹ️ About</button>
     <button class="drawer-link" data-page="advertise">📢 Advertise</button>
-  </nav>
-  <div class="drawer-footer">Free investing tool for beginners</div>
+  </div>
+  <div class="drawer-footer">Free investing tool for beginners 🌍</div>
 </div>
 
 <!-- ===== HOME ===== -->
@@ -1085,73 +1085,149 @@ function extractWhy(text){
   return sentence;
 }
 
-/* MULTI-AI DEBATE — renamed to Buy Analyst and Sell Analyst */
-async function runAIDebate(sym,name,price,chg,cur){
-  var priceStr=fmtPrice(price,cur).replace(/&#x20B9;/g,'Rs.').replace(/&#x20BF;/g,'BTC');
-  var chgStr=(chg>=0?'+':'')+chg.toFixed(2)+'%';
+/* DATA-DRIVEN PRELIMINARY VERDICT
+   Uses live price data to give a signal even before AI responds.
+   Rules: position in 52-week range + today's momentum */
+function dataVerdict(price, chg, high52, low52){
+  if(!price) return {v:'HOLD', reason:'Loading live data...'};
 
-  var buyPrompt='You are a friendly "Buy Analyst" helping a complete beginner investor. ' +
-    'Asset: '+name+' ('+sym+'). Price: '+priceStr+'. Change today: '+chgStr+'. ' +
-    'Make the case for WHY someone might want to BUY this right now. ' +
-    'Start your reply with BUY or HOLD. Write 1-2 plain sentences. No jargon, no asterisks, no markdown.';
+  var range = high52 && low52 ? high52 - low52 : 0;
+  var pos = range > 0 ? (price - low52) / range : 0.5; /* 0=near low, 1=near high */
+  var chgAbs = Math.abs(chg||0);
 
-  var sellPrompt='You are a careful "Sell Analyst" helping a complete beginner investor. ' +
-    'Asset: '+name+' ('+sym+'). Price: '+priceStr+'. Change today: '+chgStr+'. ' +
-    'Make the case for WHY someone might want to SELL or wait before buying this. ' +
-    'Start your reply with SELL or HOLD. Write 1-2 plain sentences. No jargon, no asterisks, no markdown.';
-
-  var finalPrompt='You are a wise, plain-English financial educator giving a FINAL verdict for a complete beginner. ' +
-    'Asset: '+name+' ('+sym+'). Current price: '+priceStr+'. Change today: '+chgStr+'. ' +
-    'One analyst says it is a good time to BUY. Another says to be careful and consider SELLING or waiting. ' +
-    'Give your balanced final verdict in 2-3 plain sentences. ' +
-    'Start with exactly BUY, HOLD, or SELL in capitals. Then explain WHY in simple words. No jargon, no asterisks, no markdown.';
-
-  var results=await Promise.allSettled([callAI(buyPrompt),callAI(sellPrompt)]);
-  var buyText=(results[0].status==='fulfilled'&&results[0].value)?results[0].value:'Analysis unavailable right now.';
-  var sellText=(results[1].status==='fulfilled'&&results[1].value)?results[1].value:'Analysis unavailable right now.';
-  var finalText=await callAI(finalPrompt);
-
-  return {buy:buyText,sell:sellText,final:finalText};
+  /* Strong buy signals */
+  if(pos < 0.25 && (chg||0) >= 0){
+    return {v:'BUY', reason:'Price is near its 52-week low and rising today — a potential entry point.'};
+  }
+  if(pos < 0.35 && (chg||0) > 1){
+    return {v:'BUY', reason:'Price is in the lower third of its yearly range with positive momentum today.'};
+  }
+  /* Strong sell signals */
+  if(pos > 0.85 && (chg||0) < -1.5){
+    return {v:'SELL', reason:'Price is near its 52-week high but falling today — a possible exit signal.'};
+  }
+  if(pos > 0.75 && (chg||0) < -2.5){
+    return {v:'SELL', reason:'Near yearly highs with a significant drop today — consider taking profits.'};
+  }
+  /* Caution */
+  if(chgAbs > 4 && (chg||0) < 0){
+    return {v:'SELL', reason:'Large drop today ('+(chg||0).toFixed(1)+'%). Could be a news event — check before buying.'};
+  }
+  if((chg||0) > 3){
+    return {v:'BUY', reason:'Strong upward momentum today (+'+(chg||0).toFixed(1)+'%). Trend is positive.'};
+  }
+  /* Middle zone */
+  if(pos > 0.4 && pos < 0.65){
+    return {v:'HOLD', reason:'Price is in the middle of its yearly range. No strong signal either way right now.'};
+  }
+  if(pos >= 0.65 && pos <= 0.85){
+    return {v:'HOLD', reason:'Price is in the upper range for the year. Hold if you own it, wait for a dip to buy.'};
+  }
+  return {v:'HOLD', reason:'Mixed signals from the data. Monitor for a clearer trend before acting.'};
 }
 
-async function renderAIDebate(sym,name,price,chg,cur){
-  try{
-    var result=await runAIDebate(sym,name,price,chg,cur);
+/* MULTI-AI DEBATE */
+async function runAIDebate(sym, name, price, chg, cur, high52, low52){
+  var priceStr = fmtPrice(price, cur).replace(/&#x20B9;/g,'Rs.').replace(/&#x20BF;/g,'BTC');
+  var chgStr   = (chg>=0?'+':'') + chg.toFixed(2) + '%';
+  var rangeCtx = (high52 && low52) ?
+    ' Its 52-week range is ' + fmtPrice(low52,cur).replace(/&#x20B9;/g,'Rs.') +
+    ' to ' + fmtPrice(high52,cur).replace(/&#x20B9;/g,'Rs.') + '.' : '';
+  var dv       = dataVerdict(price, chg, high52, low52);
 
-    /* Buy Analyst */
-    var op1=_('aiOp1');
+  /* Force analysts to give a specific verdict using real data context */
+  var buyPrompt =
+    'You are a friendly Buy Analyst helping a complete beginner. ' +
+    'Asset: '+name+' ('+sym+'). Current price: '+priceStr+'. Today\'s change: '+chgStr+'.'+rangeCtx+' ' +
+    'The data signal is: '+dv.v+' ('+dv.reason+') ' +
+    'Give the BULLISH case in 1-2 plain sentences. ' +
+    'Start with BUY if price is at a good entry, or HOLD if it is fair value. ' +
+    'Do NOT say HOLD for everything — use the data. No jargon. No asterisks.';
+
+  var sellPrompt =
+    'You are a careful Sell Analyst helping a complete beginner. ' +
+    'Asset: '+name+' ('+sym+'). Current price: '+priceStr+'. Today\'s change: '+chgStr+'.'+rangeCtx+' ' +
+    'The data signal is: '+dv.v+' ('+dv.reason+') ' +
+    'Give the CAUTIOUS case in 1-2 plain sentences. ' +
+    'Start with SELL if overvalued or falling, or HOLD if it is worth watching. ' +
+    'Do NOT default to HOLD — use the actual price context. No jargon. No asterisks.';
+
+  var finalPrompt =
+    'You are a plain-English financial educator giving a FINAL verdict for a complete beginner. ' +
+    'Asset: '+name+' ('+sym+'). Price: '+priceStr+'. Change today: '+chgStr+'.'+rangeCtx+' ' +
+    'Data signal: '+dv.v+' — '+dv.reason+' ' +
+    'One analyst is bullish, another is cautious. Weigh both with the data. ' +
+    'Give your verdict in 2-3 plain sentences. ' +
+    'Start with BUY, HOLD, or SELL — choose the one that BEST fits the data, do not default to HOLD. ' +
+    'Then explain why simply. No jargon. No asterisks. No markdown.';
+
+  var results  = await Promise.allSettled([callAI(buyPrompt), callAI(sellPrompt)]);
+  var buyText  = (results[0].status==='fulfilled' && results[0].value) ? results[0].value : '';
+  var sellText = (results[1].status==='fulfilled' && results[1].value) ? results[1].value : '';
+  var finalText= await callAI(finalPrompt);
+
+  /* If AI returns empty, use data-driven fallback text */
+  if(!buyText)  buyText  = (dv.v==='BUY'?'BUY':'HOLD')+' — '+dv.reason;
+  if(!sellText) sellText = (dv.v==='SELL'?'SELL':'HOLD')+' — Price context suggests caution at current levels.';
+  if(!finalText) finalText = dv.v+' — '+dv.reason;
+
+  return {buy:buyText, sell:sellText, final:finalText, dataVerdict:dv};
+}
+
+async function renderAIDebate(sym, name, price, chg, cur, high52, low52){
+  /* Show data-driven verdict immediately while AI loads */
+  var dv = dataVerdict(price, chg, high52, low52);
+  var aiFinal = _('aiFinal');
+  if(aiFinal){
+    aiFinal.innerHTML =
+      '<div class="ai-final-label">&#x2696;&#xFE0F; Data Signal &mdash; Based on live price data</div>' +
+      '<div class="ai-final-verdict" style="color:'+verdictCol(dv.v)+'">'+dv.v+'</div>' +
+      '<div class="ai-final-why"><strong>Why:</strong> '+dv.reason+'</div>' +
+      '<div class="ai-final-text" style="color:var(--text3);font-size:0.8rem">AI analysis loading...</div>';
+  }
+
+  try{
+    var result = await runAIDebate(sym, name, price, chg, cur, high52, low52);
+
+    var op1 = _('aiOp1');
     if(op1){
-      var v1=extractVerdict(result.buy);
-      op1.innerHTML='<div class="ai-opinion-hd"><span class="ai-model-badge badge-buy">Buy Analyst</span></div>' +
+      var v1 = extractVerdict(result.buy);
+      op1.innerHTML =
+        '<div class="ai-opinion-hd"><span class="ai-model-badge badge-buy">Buy Analyst</span></div>' +
         '<div class="ai-opinion-verdict" style="color:'+verdictCol(v1)+'">'+v1+'</div>' +
         '<div class="ai-opinion-text">'+result.buy+'</div>';
     }
 
-    /* Sell Analyst */
-    var op2=_('aiOp2');
+    var op2 = _('aiOp2');
     if(op2){
-      var v2=extractVerdict(result.sell);
-      op2.innerHTML='<div class="ai-opinion-hd"><span class="ai-model-badge badge-sell">Sell Analyst</span></div>' +
+      var v2 = extractVerdict(result.sell);
+      op2.innerHTML =
+        '<div class="ai-opinion-hd"><span class="ai-model-badge badge-sell">Sell Analyst</span></div>' +
         '<div class="ai-opinion-verdict" style="color:'+verdictCol(v2)+'">'+v2+'</div>' +
         '<div class="ai-opinion-text">'+result.sell+'</div>';
     }
 
-    /* Final Verdict with WHY */
-    var finalBox=_('aiFinal');
-    if(finalBox){
-      var vF=extractVerdict(result.final);
-      var colF=verdictCol(vF);
-      var whyText=extractWhy(result.final);
-      var fullText=result.final||'Based on current data and both perspectives, '+vF+' is the suggested action.';
-      finalBox.innerHTML=
-        '<div class="ai-final-label">&#x2696;&#xFE0F; Final Verdict &mdash; Based on both perspectives</div>' +
+    if(aiFinal){
+      var vF    = extractVerdict(result.final);
+      /* If AI still returns HOLD but data says otherwise, trust the data */
+      if(vF === 'HOLD' && dv.v !== 'HOLD') vF = dv.v;
+      var colF  = verdictCol(vF);
+      var whyText = extractWhy(result.final) || dv.reason;
+      var fullText = result.final || dv.v + ' — ' + dv.reason;
+      aiFinal.innerHTML =
+        '<div class="ai-final-label">&#x2696;&#xFE0F; Final Verdict &mdash; AI + Live Data</div>' +
         '<div class="ai-final-verdict" style="color:'+colF+'">'+vF+'</div>' +
-        (whyText?'<div class="ai-final-why"><strong>Why:</strong> '+whyText+'</div>':'')+
+        '<div class="ai-final-why"><strong>Why:</strong> '+whyText+'</div>' +
         '<div class="ai-final-text">'+fullText+'</div>';
     }
   } catch(e){
-    var fb=_('aiFinal');
-    if(fb) fb.innerHTML='<div class="ai-final-label">AI Advisor</div><div class="ai-final-text" style="color:var(--text2)">AI analysis is temporarily unavailable. Make sure DEEPSEEK_API_KEY is set in your Cloudflare Worker variables.</div>';
+    if(aiFinal){
+      aiFinal.innerHTML =
+        '<div class="ai-final-label">&#x2696;&#xFE0F; Data Verdict</div>' +
+        '<div class="ai-final-verdict" style="color:'+verdictCol(dv.v)+'">'+dv.v+'</div>' +
+        '<div class="ai-final-why"><strong>Why:</strong> '+dv.reason+'</div>' +
+        '<div class="ai-final-text" style="color:var(--text3);font-size:0.8rem">AI unavailable — showing data-based signal only.</div>';
+    }
   }
 }
 
@@ -1184,8 +1260,9 @@ function buildCards(){
   var cards=list.map(function(a){
     var d=liveData[a.sym]||{},p=d.changePercent||0,cur=d.currency||'USD';
     var pts=sparkCache[a.sym+'_5d']||fakePts(p);
-    var pill=p>1.5?'p-buy':p<-1?'p-sell':'p-hold';
-    var pillTxt=p>1.5?'Good time to buy?':p<-1?'Watch carefully':'Holding steady';
+    var dv=dataVerdict(d.price,p,d.high52,d.low52);
+    var pill=dv.v==='BUY'?'p-buy':dv.v==='SELL'?'p-sell':'p-hold';
+    var pillTxt=dv.v==='BUY'?'Good time to buy?':dv.v==='SELL'?'Consider selling':'Holding steady';
     return '<div class="asset-card" data-sym="'+a.sym+'">'+
       '<div class="card-top"><div class="card-left"><div class="card-ico">'+a.ico+'</div><div><div class="card-nm">'+a.name+'</div><div class="card-sym">'+a.sym+'</div></div></div><span class="card-type '+typeClass(a.type)+'">'+typeLabel(a.type)+'</span></div>'+
       '<div class="card-price">'+(d.price?fmtPrice(d.price,cur):'<span class="price-skeleton"></span>')+'</div>'+
@@ -1670,7 +1747,7 @@ async function openPanel(sym){
   if(lrLink) lrLink.addEventListener('click',function(e){ e.preventDefault(); _('overlay').classList.remove('open'); document.body.style.overflow=''; showPage('about'); setTimeout(function(){ var el=_('appReviewForm'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },400); });
 
   renderChart(sym,'5d',p>=0);
-  renderAIDebate(sym,a.name,d.price||0,p,cur);
+  renderAIDebate(sym,a.name,d.price||0,p,cur,d.high52,d.low52);
 }
 
 /* PAGES */
