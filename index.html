@@ -749,6 +749,39 @@ var WHERE = {
 };
 
 /* Smart search goal recommendations — 15 picks per goal+risk, each with buy reason + sell/hold guidance */
+
+/* WATCH TIMEFRAMES — how often to check and how long to hold */
+var WATCH_TIMES = {
+  BTC:          {trade:'Check every few hours. Bitcoin can move 10%+ overnight.',grow:'Check weekly. Think in months, not days. Bitcoin moves in 6-18 month cycles.',income:'Check monthly. Hold through the noise.',safe:'Check monthly.',crypto:'Check daily. Major moves possible within 24-48 hours.',india:'Check weekly.'},
+  ETH:          {trade:'Monitor every few hours. ETH reacts fast to crypto news.',grow:'Check weekly. 6-18 month cycles are common for Ethereum.',income:'Check monthly.',safe:'Check monthly.',crypto:'Check daily. Target window for short moves: 1-7 days.',india:'Check weekly.'},
+  SOL:          {trade:'Watch every 2-4 hours. SOL can swing 10-15% in a single day.',grow:'Check weekly. Suggested hold: 3-12 months minimum.',income:'Check weekly.',safe:'Check weekly.',crypto:'Check every few hours. One of the fastest-moving major cryptos.',india:'Check weekly.'},
+  BNB:          {trade:'Monitor daily. Exchange news drives quick moves.',grow:'Check weekly.',income:'Check weekly.',safe:'Check weekly.',crypto:'Check daily. Good for 2-5 day swing trades.',india:'Check weekly.'},
+  AAPL:         {trade:'Check daily around market open (9:30 AM New York). Earnings every 3 months are the biggest events.',grow:'Check monthly. Ideal hold: 2-5 years.',income:'Check every 3 months on earnings day.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check monthly.'},
+  TSLA:         {trade:'Watch every few hours. News and tweets can move it 5%+ in minutes.',grow:'Check weekly. Expect big swings. Not for the faint-hearted.',income:'Check weekly.',safe:'Check weekly.',crypto:'Check weekly.',india:'Check weekly.'},
+  NVDA:         {trade:'Watch daily. AI news cycles drive rapid moves. Earnings every 3 months are huge.',grow:'Check weekly. Hold 1-3 years for the full AI investment cycle.',income:'Check monthly.',safe:'Check monthly.',crypto:'Check weekly.',india:'Check weekly.'},
+  MSFT:         {trade:'Check daily. Earnings 4 times a year are the key catalysts.',grow:'Check monthly. Ideal hold: 3-5 years.',income:'Check every 3 months on dividend and earnings dates.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check monthly.'},
+  GOOGL:        {trade:'Check daily. Earnings quarterly are the biggest catalyst.',grow:'Check monthly. Hold 2-4 years.',income:'Check every 3 months.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check monthly.'},
+  META:         {trade:'Watch daily. AI announcements and earnings drive fast moves.',grow:'Check monthly. Hold 1-3 years.',income:'Check every 3 months.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check monthly.'},
+  AMZN:         {trade:'Check daily, especially around AWS earnings news.',grow:'Check monthly. Hold 2-4 years.',income:'Check every 3 months.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check monthly.'},
+  VOO:          {trade:'Check weekly. ETFs are slower — best for patient traders.',grow:'Check monthly. Ideal hold: 5-20 years. Never panic sell.',income:'Check every 3 months on dividend payout dates.',safe:'Check monthly. This is a forever hold.',crypto:'Check monthly.',india:'Check monthly.'},
+  QQQ:          {trade:'Check daily. Tracks Nasdaq — reacts to tech sector news.',grow:'Check monthly. Hold 3-7 years.',income:'Check every 3 months.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check monthly.'},
+  GLD:          {trade:'Check daily. Gold reacts to inflation data and central bank news.',grow:'Check monthly. Gold is a 3-10 year hold.',income:'Check every 3 months.',safe:'Check monthly. Gold is insurance — be patient.',crypto:'Check monthly.',india:'Check monthly.'},
+  'RELIANCE.NS':{trade:'Check daily during Indian market hours (9:15 AM to 3:30 PM IST).',grow:'Check monthly. Hold 3-5 years.',income:'Check every 3 months on dividend dates.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check weekly. Watch Jio subscriber numbers monthly — that is the growth story.'},
+  'TCS.NS':     {trade:'Check daily. Earnings are quarterly and drive the biggest moves.',grow:'Check monthly. Hold 2-4 years.',income:'Check every 3 months on dividend dates.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check weekly. Quarterly earnings are the key event to watch.'},
+  'INFY.NS':    {trade:'Check daily during earnings season.',grow:'Check monthly.',income:'Check every 3 months.',safe:'Check monthly.',crypto:'Check monthly.',india:'Check weekly.'},
+};
+var WATCH_DEFAULT = {
+  crypto:'Check daily. Crypto can move significantly within 24 hours.',
+  stock: 'Check weekly. The biggest moves usually happen around earnings every 3 months.',
+  etf:   'Check monthly. ETFs are designed for patient long-term investors.',
+  index: 'Check monthly.',
+};
+function getWatchTime(sym, goal, assetType){
+  var e = WATCH_TIMES[sym];
+  if(e && e[goal]) return e[goal];
+  return WATCH_DEFAULT[assetType] || 'Check weekly and be patient.';
+}
+
 var GOAL_PICKS = {
   grow: {
     low: [
@@ -1344,6 +1377,8 @@ function renderPicksPage(page){
 
     var profitHtml = injectContext(p.profit, true);
     var lossHtml   = injectContext(p.loss,   false);
+    var assetType  = (ASSETS.find(function(x){ return x.sym===p.sym; })||{type:'stock'}).type;
+    var watchHtml  = getWatchTime(p.sym, smartGoal, assetType);
 
     gridHtml +=
       '<div class="smart-pick-card" data-sym="'+p.sym+'">' +
@@ -1364,9 +1399,13 @@ function renderPicksPage(page){
         '</div>' +
         '<div style="font-size:0.79rem;color:var(--text2);margin-bottom:10px;line-height:1.55">'+p.why+'</div>' +
         '<div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:0.75rem;line-height:1.7">' +
-          '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:8px">&#x23F1; When to Sell</div>' +
+          '<div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:8px">&#x23F1; When to Sell</div>' +
           '<div style="margin-bottom:6px"><span style="color:var(--accent);font-weight:700">&#x2197; If it goes up:</span> <span style="color:var(--text2)">'+profitHtml+'</span></div>' +
-          '<div><span style="color:var(--red);font-weight:700">&#x2198; If it drops:</span> <span style="color:var(--text2)">'+lossHtml+'</span></div>' +
+          '<div style="margin-bottom:8px"><span style="color:var(--red);font-weight:700">&#x2198; If it drops:</span> <span style="color:var(--text2)">'+lossHtml+'</span></div>' +
+          '<div style="background:rgba(124,108,255,0.08);border:1px solid rgba(124,108,255,0.2);border-radius:6px;padding:7px 9px">' +
+            '<div style="font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--accent2);margin-bottom:3px">&#x1F440; Keep an eye on</div>' +
+            '<span style="color:var(--text2)">'+watchHtml+'</span>' +
+          '</div>' +
         '</div>' +
         '<div style="margin-top:10px;font-size:0.74rem;color:var(--accent);font-weight:600;text-align:center;border-top:1px solid var(--border);padding-top:8px">Tap for live analysis &#x2192;</div>' +
       '</div>';
