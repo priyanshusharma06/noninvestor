@@ -1269,59 +1269,62 @@ function renderPicksPage(page){
       moneyChangeHtml = d.price ? '<span style="color:'+col2+';font-size:0.76rem">'+fmtChg(chg)+'</span>' : '';
     }
 
-    /* Convert percentage mentions in guidance text to actual money values */
-    function injectMoney(text){
+    /* Convert percentage mentions in guidance text to actual money values.
+       Two-pass: first handle ranges like +25-30%, then single %s.
+       Use a placeholder token between passes to prevent double-processing. */
+    function moneyStr(pct, baseAmt){
+      var money = Math.abs(baseAmt * pct / 100);
+      var target = baseAmt + (baseAmt * pct / 100);
+      var mStr = money >= 1000 ? money.toLocaleString('en-US',{maximumFractionDigits:0}) : money.toFixed(0);
+      var tStr = target >= 1000 ? target.toLocaleString('en-US',{maximumFractionDigits:0}) : target.toFixed(0);
+      var sc = pct >= 0 ? '+' : '-';
+      return '(' + sc + curSym + mStr + ' \u2192 ' + curSym + tStr + ')';
+    }
+
+    function injectMoney(text, forceNeg){
       if(!amt || amt <= 0) return text;
 
-      /* Handle ranges like "+25-30%" first — replace whole range with money */
-      text = text.replace(/([+-]?\d+(?:\.\d+)?)\s*[-\u2013]\s*(\d+(?:\.\d+)?)\s*%/g, function(match, lo, hi){
-        var loNum = parseFloat(lo);
-        var hiNum = parseFloat(hi);
-        /* Inherit sign from first number for the range */
-        var sign = loNum < 0 ? -1 : 1;
-        var loMoney = Math.abs(amt * loNum / 100);
-        var hiMoney = Math.abs(amt * hiNum / 100);
-        var loTarget = amt + (amt * loNum / 100);
-        var hiTarget = amt + (amt * hiNum / 100);
-        var loStr = loMoney.toFixed(0);
-        var hiStr = hiMoney.toFixed(0);
-        var loTgt = loTarget.toFixed(0);
-        var hiTgt = hiTarget.toFixed(0);
-        var signChar = sign >= 0 ? '+' : '-';
-        return '<strong style="color:var(--text)">' + match +
-          ' (' + signChar + curSym + loStr + '&ndash;' + signChar + curSym + hiStr +
-          ' &rarr; ' + curSym + loTgt + '&ndash;' + curSym + hiTgt + ')</strong>';
-      });
+      /* Pass 1: ranges like +25-30% or 25-30% */
+      var PLACEHOLDER = '\x00DONE\x00';
+      text = text.replace(/([+-]?)(\d+(?:\.\d+)?)\s*[-\u2013]\s*(\d+(?:\.\d+)?)\s*%/g,
+        function(match, sign, lo, hi){
+          var loP = parseFloat(lo) * (sign === '-' ? -1 : 1);
+          var hiP = parseFloat(hi) * (sign === '-' ? -1 : 1);
+          /* For a range like +25-30, both numbers are positive gains */
+          var loMoney = Math.abs(amt * loP / 100);
+          var hiMoney = Math.abs(amt * hiP / 100);
+          var loTarget = amt + (amt * loP / 100);
+          var hiTarget = amt + (amt * hiP / 100);
+          var loM = loMoney.toFixed(0);
+          var hiM = hiMoney.toFixed(0);
+          var loT = loTarget.toFixed(0);
+          var hiT = hiTarget.toFixed(0);
+          var sc = loP >= 0 ? '+' : '-';
+          var inner = sc+curSym+loM+'\u2013'+sc+curSym+hiM+' \u2192 '+curSym+loT+'\u2013'+curSym+hiT;
+          return '<strong style="color:var(--text)">'+match+' ('+inner+')</strong>'+PLACEHOLDER;
+        });
 
-      /* Handle single percentages like "+25%" or "-15%" or "15%" */
-      text = text.replace(/([+-]?)(\d+(?:\.\d+)?)%/g, function(match, sign, numStr){
-        /* Skip if already wrapped (inside a <strong> tag — check context via lookahead not possible, so skip if no digit follows % */
-        var pct = parseFloat(numStr);
-        if(isNaN(pct) || pct === 0) return match;
+      /* Pass 2: single percentages — skip anything already followed by placeholder */
+      text = text.replace(/([+-]?)(\d+(?:\.\d+)?)%(?!\x00DONE\x00)/g,
+        function(match, sign, numStr){
+          var pct = parseFloat(numStr);
+          if(isNaN(pct) || pct === 0) return match;
+          var isNeg = (sign === '-') || forceNeg;
+          var effectivePct = isNeg ? -pct : pct;
+          return '<strong style="color:var(--text)">'+match+' '+moneyStr(effectivePct, amt)+'</strong>';
+        });
 
-        /* Determine real sign: explicit sign wins; if text contains "down" or "drop" or "loss" before this point, treat as negative */
-        var isNeg = (sign === '-');
-        var effectivePct = isNeg ? -pct : pct;
-        var money = Math.abs(amt * effectivePct / 100);
-        var target = amt + (amt * effectivePct / 100);
-        var monStr = money >= 1000 ? money.toLocaleString('en-US',{maximumFractionDigits:0}) : money.toFixed(0);
-        var tgtStr = target >= 1000 ? target.toLocaleString('en-US',{maximumFractionDigits:0}) : target.toFixed(0);
-        var signChar = effectivePct >= 0 ? '+' : '-';
-
-        return '<strong style="color:var(--text)">' + match +
-          ' (' + signChar + curSym + monStr + ' &rarr; ' + curSym + tgtStr + ')</strong>';
-      });
-
+      /* Remove placeholders */
+      text = text.split(PLACEHOLDER).join('');
       return text;
     }
 
-    /* For loss/drop lines, pre-process to ensure percentages are treated as negative */
+    /* Loss context: pre-convert "Down X%" to "Down -X%" so it reads as negative */
     function injectMoneyLoss(text){
       if(!amt || amt <= 0) return text;
-      /* Force all bare numbers before % to be negative for loss context */
-      var processed = text.replace(/\bDown\s+(\d+(?:\.\d+)?)\s*%/gi, function(m, n){ return 'Down -' + n + '%'; });
-      processed = processed.replace(/\bdrop(?:s|ped)?\s+(\d+(?:\.\d+)?)\s*%/gi, function(m, n){ return m.replace(n+'%', '-'+n+'%'); });
-      return injectMoney(processed);
+      var processed = text.replace(/\bDown\s+(\d+(?:\.\d+)?)\s*%/gi,
+        function(m, n){ return 'Down -'+n+'%'; });
+      return injectMoney(processed, false);
     }
 
     var profitHtml = injectMoney(p.profit);
