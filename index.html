@@ -308,47 +308,71 @@ h1 em{font-style:normal;color:var(--accent)}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:clamp(18px,3vw,28px) var(--gutter);text-align:center;color:var(--text2);font-size:0.78rem;line-height:1.9;width:100%}
 footer a{color:var(--accent);text-decoration:none}
-/* RESPONSIVE */
-@media(max-width:768px){
-  .ai-opinions{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:repeat(3,1fr)}
-  .detail-stats{grid-template-columns:1fr 1fr}
-  .smart-goals{grid-template-columns:repeat(3,1fr)}
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;position:absolute;right:var(--gutter);transition:var(--ease)}
+.hamburger:hover{background:var(--surface2)}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:var(--ease)}
+
+/* DRAWER OVERLAY */
+#drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:400;display:none;opacity:0;transition:opacity 0.28s ease}
+#drawerOverlay.open{display:block;opacity:1}
+
+/* SIDE DRAWER */
+#drawer{position:fixed;top:0;left:-300px;width:min(280px,80vw);height:100vh;background:var(--surface);border-right:1px solid var(--border);z-index:401;transition:left 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden}
+#drawer.open{left:0}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.drawer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;color:var(--text)}
+.drawer-close{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;display:grid;place-items:center;transition:var(--ease)}
+.drawer-close:hover{color:var(--text)}
+.drawer-nav{display:flex;flex-direction:column;padding:16px 12px;gap:4px;flex:1}
+.drawer-link{background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;padding:13px 16px;border-radius:10px;cursor:pointer;text-align:left;transition:var(--ease);width:100%}
+.drawer-link:hover{background:var(--surface2);color:var(--text)}
+.drawer-link.active{background:rgba(0,229,160,0.08);color:var(--accent);font-weight:600}
+.drawer-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:0.78rem;color:var(--text3);text-align:center}
+
+@media(max-width:860px){
+  .hamburger{display:flex}
+  .nav-links{display:none}
 }
-@media(max-width:640px){
-  nav{padding:0 12px}
-  .nav-link{font-size:0.77rem;padding:6px 9px}
-  .logo{font-size:1rem}
-  #panel{border-radius:20px 20px 0 0;max-height:96vh}
-  .form-cols{grid-template-columns:1fr}
-  .detail-stats{grid-template-columns:1fr}
-  .ai-opinions{grid-template-columns:1fr}
-  .ad-banner{flex-direction:column;align-items:flex-start}
-  .dev-card{flex-direction:column}
-  .smart-goals{grid-template-columns:repeat(2,1fr)}
-  .stats-row{grid-template-columns:repeat(3,1fr)}
-}
-@media(max-width:420px){
-  .nav-link[data-page="about"]{display:none}
-  .nav-link[data-page="advertise"]{display:none}
-  .stats-row{grid-template-columns:repeat(2,1fr)}
-  .smart-goals{grid-template-columns:repeat(2,1fr)}
-  .timeframe-row{gap:4px}
-  .tf-btn{padding:4px 8px;font-size:0.7rem}
+@media(min-width:861px){
+  .hamburger{display:none}
+  #drawer{display:none}
+  #drawerOverlay{display:none!important}
 }
 </style>
 </head>
 <body>
 
 <nav>
-  <a class="logo" id="navLogo" href="#"><div class="logo-mark">📈</div>Non<em>Investor</em></a>
+  <a class="logo" id="navLogo" href="#">
+    <div class="logo-mark">📈</div>Non<em>Investor</em>
+  </a>
   <div class="nav-links">
     <button class="nav-link active" data-page="home">Home</button>
     <button class="nav-link" data-page="smart">What Should I Buy?</button>
     <button class="nav-link" data-page="about">About</button>
     <button class="nav-link" data-page="advertise">Advertise</button>
   </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- MOBILE SIDE DRAWER -->
+<div id="drawerOverlay"></div>
+<div id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo"><div class="logo-mark">📈</div>Non<em style="color:var(--accent)">Investor</em></div>
+    <button class="drawer-close" id="drawerClose">&#x2715;</button>
+  </div>
+  <nav class="drawer-nav">
+    <button class="drawer-link active" data-page="home">🏠 Home</button>
+    <button class="drawer-link" data-page="smart">🤔 What Should I Buy?</button>
+    <button class="drawer-link" data-page="about">ℹ️ About</button>
+    <button class="drawer-link" data-page="advertise">📢 Advertise</button>
+  </nav>
+  <div class="drawer-footer">Free investing tool for beginners</div>
+</div>
 
 <!-- ===== HOME ===== -->
 <div class="page active" id="page-home">
@@ -1288,9 +1312,6 @@ function renderPicksPage(page){
       var DONE = '\u0000DONE\u0000';
       text = text.replace(/[+-]?(\d+(?:\.\d+)?)\s*[-\u2013to]+\s*(\d+(?:\.\d+)?)\s*%/g,
         function(match, lo, hi){
-          var loVal = calcMoney(lo, amt, positive);
-          var hiVal = calcMoney(hi, amt, positive);
-          /* Extract just the target values for the range */
           var loMoney = Math.abs(amt * parseFloat(lo) / 100);
           var hiMoney = Math.abs(amt * parseFloat(hi) / 100);
           var loTarget = amt + (positive ? loMoney : -loMoney);
@@ -1300,6 +1321,7 @@ function renderPicksPage(page){
           var loT = loTarget.toFixed(0);
           var hiT = hiTarget.toFixed(0);
           var sc = positive ? '+' : '-';
+          /* Only one bracket: shows money gain/loss range → target range */
           return '<strong style="color:var(--text)">' + match +
             ' (' + sc + curSym + loM + ' to ' + sc + curSym + hiM +
             ' \u2192 ' + curSym + loT + ' to ' + curSym + hiT + ')</strong>' + DONE;
@@ -1610,6 +1632,7 @@ async function openPanel(sym){
 function showPage(name){
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.nav-link').forEach(function(l){ l.classList.remove('active'); });
+  document.querySelectorAll('.drawer-link').forEach(function(l){ l.classList.toggle('active', l.getAttribute('data-page')===name); });
   var pg=_('page-'+name); if(pg) pg.classList.add('active');
   var lnk=document.querySelector('.nav-link[data-page="'+name+'"]'); if(lnk) lnk.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1706,8 +1729,39 @@ async function submitAppReview(){
 /* BOOT */
 document.addEventListener('DOMContentLoaded',function(){
 
+  /* HAMBURGER DRAWER */
+  function openDrawer(){
+    _('drawer').classList.add('open');
+    _('drawerOverlay').classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function closeDrawer(){
+    _('drawer').classList.remove('open');
+    _('drawerOverlay').classList.remove('open');
+    document.body.style.overflow='';
+  }
+  _('hamburger').addEventListener('click', openDrawer);
+  _('drawerClose').addEventListener('click', closeDrawer);
+  _('drawerOverlay').addEventListener('click', closeDrawer);
+
+  document.querySelectorAll('.drawer-link').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var pg=this.getAttribute('data-page');
+      document.querySelectorAll('.drawer-link').forEach(function(l){ l.classList.remove('active'); });
+      this.classList.add('active');
+      showPage(pg);
+      closeDrawer();
+    });
+  });
+
   document.querySelectorAll('.nav-link').forEach(function(btn){
-    btn.addEventListener('click',function(){ showPage(this.getAttribute('data-page')); });
+    btn.addEventListener('click',function(){
+      var pg=this.getAttribute('data-page');
+      showPage(pg);
+      document.querySelectorAll('.drawer-link').forEach(function(l){
+        l.classList.toggle('active', l.getAttribute('data-page')===pg);
+      });
+    });
   });
   _('navLogo').addEventListener('click',function(e){ e.preventDefault(); showPage('home'); });
   _('footerAdLink').addEventListener('click',function(e){ e.preventDefault(); showPage('advertise'); });
