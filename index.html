@@ -820,6 +820,53 @@ footer a{color:var(--accent);text-decoration:none}
       </div>
     </div>
 
+
+    <!-- COMPARISON TABLE — always visible in About -->
+    <div style="margin-bottom:32px">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;margin-bottom:16px;letter-spacing:-0.01em">How NonInvestor compares</div>
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+        <table style="width:100%;border-collapse:collapse;font-size:0.84rem;color:var(--text2);min-width:520px">
+          <thead>
+            <tr style="background:var(--surface2)">
+              <th style="padding:12px 16px;text-align:left;font-family:'Syne',sans-serif;color:var(--text);border-bottom:1px solid var(--border)">Feature</th>
+              <th style="padding:12px 16px;text-align:center;font-family:'Syne',sans-serif;color:var(--accent);border-bottom:1px solid var(--border)">NonInvestor</th>
+              <th style="padding:12px 16px;text-align:center;border-bottom:1px solid var(--border)">Yahoo Finance</th>
+              <th style="padding:12px 16px;text-align:center;border-bottom:1px solid var(--border)">Bloomberg</th>
+              <th style="padding:12px 16px;text-align:center;border-bottom:1px solid var(--border)">Morningstar</th>
+              <th style="padding:12px 16px;text-align:center;border-bottom:1px solid var(--border)">Zerodha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-weight:600;color:var(--text)">Completely Free</td><td style="padding:10px 16px;text-align:center;color:var(--accent)">&#x2713; Always free</td><td style="padding:10px 16px;text-align:center">&#x2713; Free</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; $35/mo+</td><td style="padding:10px 16px;text-align:center">Partial</td><td style="padding:10px 16px;text-align:center">&#x2713; Free</td></tr>
+            <tr style="background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-weight:600;color:var(--text)">AI Buy/Hold/Sell verdict</td><td style="padding:10px 16px;text-align:center;color:var(--accent)">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td><td style="padding:10px 16px;text-align:center">Partial</td><td style="padding:10px 16px;text-align:center">Analyst ratings</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-weight:600;color:var(--text)">Plain English &mdash; no jargon</td><td style="padding:10px 16px;text-align:center;color:var(--accent)">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td></tr>
+            <tr style="background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-weight:600;color:var(--text)">Global stocks &amp; crypto</td><td style="padding:10px 16px;text-align:center;color:var(--accent)">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center">Partial</td><td style="padding:10px 16px;text-align:center">India only</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-weight:600;color:var(--text)">No account required</td><td style="padding:10px 16px;text-align:center;color:var(--accent)">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; Account</td><td style="padding:10px 16px;text-align:center">Partial</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; Account</td></tr>
+            <tr style="background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border)"><td style="padding:10px 16px;font-weight:600;color:var(--text)">Where to buy guide</td><td style="padding:10px 16px;text-align:center;color:var(--accent)">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td><td style="padding:10px 16px;text-align:center">&#x2713; Yes</td></tr>
+            <tr><td style="padding:10px 16px;font-weight:600;color:var(--text)">Personalised recommendations</td><td style="padding:10px 16px;text-align:center;color:var(--accent)">&#x2713; Yes</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td><td style="padding:10px 16px;text-align:center">Partial</td><td style="padding:10px 16px;text-align:center">Partial</td><td style="padding:10px 16px;text-align:center;color:var(--red)">&#x2717; No</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EXPANDABLE LEARN MORE -->
+    <div style="margin-bottom:32px">
+      <button id="learnMoreBtn" onclick="document.getElementById('learnMoreContent').style.display=document.getElementById('learnMoreContent').style.display==='none'?'block':'none';this.innerHTML=this.innerHTML.includes('&#x25BC;')?'&#x25B2; Show less about NonInvestor':'&#x25BC; Learn more about NonInvestor'" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:600;padding:11px 20px;border-radius:10px;cursor:pointer;transition:var(--ease);width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between">
+        <span>&#x25BC; Learn more about NonInvestor</span>
+      </button>
+      <div id="learnMoreContent" style="display:none;background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:20px">
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:10px;color:var(--text)">The Free Investment Screener Built for Complete Beginners</h3>
+        <p style="color:var(--text2);font-size:0.875rem;line-height:1.8;margin-bottom:12px">NonInvestor is a completely free investment analysis app that gives you live stock prices, cryptocurrency prices, ETF data and AI-powered Buy, Hold or Sell recommendations &mdash; all explained in plain English without any financial jargon. It was built by Priyanshu Sharma specifically for people who are new to investing and find every other tool confusing.</p>
+        <p style="color:var(--text2);font-size:0.875rem;line-height:1.8;margin-bottom:12px">Unlike Bloomberg Terminal, Yahoo Finance, Morningstar or Zerodha Kite &mdash; which are all designed for experienced investors &mdash; NonInvestor tells you exactly what an asset is, whether you should buy it right now, how much you stand to gain or lose, where to actually buy it, and how long to hold it. Everything is free. No account. No subscription.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;margin-top:14px">
+          <div style="background:var(--surface3);border-radius:10px;padding:14px"><div style="font-weight:600;font-size:0.875rem;color:var(--accent);margin-bottom:6px">&#x1F1FA;&#x1F1F8; US Stocks</div><div style="font-size:0.8rem;color:var(--text2)">Apple, Tesla, Nvidia, Microsoft, Google, Amazon, Meta and thousands more</div></div>
+          <div style="background:var(--surface3);border-radius:10px;padding:14px"><div style="font-weight:600;font-size:0.875rem;color:var(--accent);margin-bottom:6px">&#x1F1EE;&#x1F1F3; Indian Stocks</div><div style="font-size:0.8rem;color:var(--text2)">Reliance, TCS, Infosys, HDFC Bank, ICICI Bank, Bajaj Finance, Nifty 50</div></div>
+          <div style="background:var(--surface3);border-radius:10px;padding:14px"><div style="font-weight:600;font-size:0.875rem;color:var(--accent);margin-bottom:6px">&#x20BF; Cryptocurrency</div><div style="font-size:0.8rem;color:var(--text2)">Bitcoin, Ethereum, Solana, BNB, XRP, Dogecoin, Cardano and more</div></div>
+          <div style="background:var(--surface3);border-radius:10px;padding:14px"><div style="font-weight:600;font-size:0.875rem;color:var(--accent);margin-bottom:6px">&#x1F4CA; ETFs &amp; Funds</div><div style="font-size:0.8rem;color:var(--text2)">S&amp;P 500 VOO, QQQ, SPY, Gold GLD, Vanguard Total Market and more</div></div>
+        </div>
+      </div>
+    </div>
+
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center;margin-bottom:32px">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:8px">Have feedback or a question?</div>
       <div style="color:var(--text2);font-size:0.875rem;margin-bottom:14px">Use the Advertise page contact form to get in touch &mdash; we read every message.</div>
@@ -914,7 +961,7 @@ footer a{color:var(--accent);text-decoration:none}
      This section is always visible to Google crawlers.
      It answers real questions people search for and drives organic rankings.
      ===================================================================== -->
-<section id="seo-content" aria-label="Investment information and guides" style="background:var(--surface);border-top:1px solid var(--border);padding:clamp(40px,6vw,80px) var(--gutter);position:relative;z-index:1">
+<section id="seo-content" aria-label="Investment information and guides" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none" aria-hidden="false">
 <div style="max-width:1100px;margin:0 auto">
 
   <!-- INTRO -->
@@ -2360,15 +2407,38 @@ async function openPanel(sym){
   renderAIDebate(sym,a.name,d.price||0,p,cur,d.high52,d.low52);
 }
 
-/* PAGES */
-function showPage(name){
+/* PAGES — with hash URL routing */
+var PAGE_ROUTES = {home:'/',smart:'/what-should-i-buy',about:'/about',advertise:'/advertise'};
+var ROUTE_PAGES = {'/':'home','/what-should-i-buy':'smart','/about':'about','/advertise':'advertise','/#smart':'smart','/#about':'about','/#advertise':'advertise','/#home':'home'};
+
+function showPage(name, pushState){
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.nav-link').forEach(function(l){ l.classList.remove('active'); });
   document.querySelectorAll('.drawer-link').forEach(function(l){ l.classList.toggle('active', l.getAttribute('data-page')===name); });
   var pg=_('page-'+name); if(pg) pg.classList.add('active');
   var lnk=document.querySelector('.nav-link[data-page="'+name+'"]'); if(lnk) lnk.classList.add('active');
+  /* Update URL */
+  if(pushState !== false){
+    var route = PAGE_ROUTES[name] || '/';
+    if(window.history && window.history.pushState){
+      window.history.pushState({page:name}, '', route);
+    }
+  }
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='about') renderAppReviews();
+}
+
+/* Handle browser back/forward */
+window.addEventListener('popstate', function(e){
+  var page = (e.state && e.state.page) ? e.state.page : getPageFromURL();
+  showPage(page, false);
+});
+
+/* Detect page from current URL on load */
+function getPageFromURL(){
+  var path = window.location.pathname;
+  var hash = window.location.hash;
+  return ROUTE_PAGES[path] || ROUTE_PAGES[hash] || 'home';
 }
 
 /* FORM */
@@ -2469,13 +2539,16 @@ document.addEventListener('DOMContentLoaded',function(){
     closeCountryModal();
   });
 
+  /* Navigate to correct page from URL on first load */
+  var initialPage = getPageFromURL();
+  if(initialPage !== 'home') showPage(initialPage, false);
+
   /* Show modal on first visit, or restore saved country */
   var savedCode = loadSavedCountry();
   if(savedCode){
     saveCountry(savedCode);
     applyCountry(userCountry);
   } else {
-    /* Small delay so page renders first */
     setTimeout(showCountryModal, 600);
   }
 

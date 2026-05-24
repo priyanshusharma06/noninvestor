@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <!--
-    NOTE: NonInvestor is a single-page app.
-    Only the root URL and hash-style pages are valid entries.
-    Do NOT include ?q= parameter URLs — Google counts those as errors
-    because the server returns identical HTML for all of them.
-    SEO for individual stocks/crypto is handled via meta tags and page content,
-    not separate sitemap entries.
-  -->
-
-  <!-- Main app -->
   <url>
     <loc>https://www.noninvestor.com/</loc>
     <lastmod>2026-05-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
+  <url>
+    <loc>https://www.noninvestor.com/what-should-i-buy</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.noninvestor.com/about</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.noninvestor.com/advertise</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
 </urlset>
