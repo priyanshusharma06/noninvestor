@@ -1223,21 +1223,30 @@ function applyCountry(country){
 function buildCountryDropdown(){
   var dd=document.getElementById('countryDropdown');
   if(!dd) return;
-  var html='';
+  dd.innerHTML='';
   for(var i=0;i<COUNTRIES.length;i++){
     var c=COUNTRIES[i];
-    var sel=userCountry&&userCountry.code===c.code;
-    html+='<button class="country-dd-item'+(sel?' selected':'')+'" data-code="'+c.code+'" style="display:flex;align-items:center;gap:10px;padding:11px 14px;width:100%;background:none;border:none;cursor:pointer;font-family:DM Sans,sans-serif;font-size:0.84rem;color:'+(sel?'var(--accent)':'var(--text2)')+';">'+
-      '<span style="font-size:1.1rem;width:24px;flex-shrink:0">'+c.flag+'</span>'+
-      '<span style="flex:1;text-align:left">'+c.name+'</span>'+
-      (sel?'<span style="color:var(--accent)">&#x2713;</span>':'')+
-    '</button>';
-  }
-  dd.innerHTML=html;
-  dd.querySelectorAll('.country-dd-item').forEach(function(btn){
-    btn.style.transition='background 0.15s';
+    var isSel=userCountry&&userCountry.code===c.code;
+    var btn=document.createElement('button');
+    btn.setAttribute('data-code',c.code);
+    btn.style.cssText='display:flex;align-items:center;gap:10px;padding:11px 14px;width:100%;background:'+(isSel?'rgba(0,229,160,0.05)':'none')+';border:none;cursor:pointer;font-family:DM Sans,sans-serif;font-size:0.84rem;color:'+(isSel?'var(--accent)':'var(--text2)')+';transition:background 0.15s;';
+    if(isSel) btn.classList.add('selected');
+    var flagEl=document.createElement('span');
+    flagEl.style.cssText='font-size:1.2rem;width:26px;flex-shrink:0;';
+    flagEl.textContent=c.flag;
+    var nameEl=document.createElement('span');
+    nameEl.style.cssText='flex:1;text-align:left;';
+    nameEl.textContent=c.name;
+    btn.appendChild(flagEl);
+    btn.appendChild(nameEl);
+    if(isSel){
+      var chk=document.createElement('span');
+      chk.style.color='var(--accent)';
+      chk.textContent='✓';
+      btn.appendChild(chk);
+    }
     btn.addEventListener('mouseover',function(){ this.style.background='rgba(0,229,160,0.07)'; this.style.color='var(--text)'; });
-    btn.addEventListener('mouseout',function(){ this.style.background=''; this.style.color=this.classList.contains('selected')?'var(--accent)':'var(--text2)'; });
+    btn.addEventListener('mouseout',function(){ this.style.background=this.classList.contains('selected')?'rgba(0,229,160,0.05)':''; this.style.color=this.classList.contains('selected')?'var(--accent)':'var(--text2)'; });
     btn.addEventListener('click',function(){
       saveCountry(this.getAttribute('data-code'));
       applyCountry(userCountry);
@@ -1245,7 +1254,8 @@ function buildCountryDropdown(){
       buildCountryDropdown();
       toast('\uD83C\uDF0D Personalised for '+userCountry.name);
     });
-  });
+    dd.appendChild(btn);
+  }
 }
 
 function openCountryDropdown(){
@@ -1272,37 +1282,30 @@ function toggleCountryDropdown(){
 function showCountryModal(){
   var modal=document.getElementById('countryModal'); if(!modal) return;
   var grid=document.getElementById('countryGrid'); if(!grid) return;
-  var html='';
+  grid.innerHTML='';
   for(var i=0;i<COUNTRIES.length;i++){
     var c=COUNTRIES[i];
-    html+='<button data-code="'+c.code+'" style="'+
-      'background:#171726;border:1.5px solid #252538;border-radius:12px;'+
-      'padding:16px 10px;cursor:pointer;text-align:center;'+
-      'font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;'+
-      'flex-direction:column;align-items:center;justify-content:center;gap:6px;">'+
-      '<span style="font-size:2rem;line-height:1;display:block">'+c.flag+'</span>'+
-      '<span style="font-weight:700;font-size:0.88rem;display:block">'+c.name+'</span>'+
-    '</button>';
-  }
-  grid.innerHTML=html;
-  grid.querySelectorAll('button[data-code]').forEach(function(btn){
-    btn.addEventListener('mouseover',function(){
-      this.style.borderColor='#00e5a0';
-      this.style.background='#1f1f32';
-      this.style.transform='translateY(-2px)';
-    });
-    btn.addEventListener('mouseout',function(){
-      this.style.borderColor='#252538';
-      this.style.background='#171726';
-      this.style.transform='';
-    });
+    var btn=document.createElement('button');
+    btn.setAttribute('data-code',c.code);
+    btn.style.cssText='background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;';
+    var flagSpan=document.createElement('span');
+    flagSpan.style.cssText='font-size:2rem;line-height:1;display:block;';
+    flagSpan.textContent=c.flag;
+    var nameSpan=document.createElement('span');
+    nameSpan.style.cssText='font-weight:700;font-size:0.85rem;display:block;line-height:1.3;';
+    nameSpan.textContent=c.name;
+    btn.appendChild(flagSpan);
+    btn.appendChild(nameSpan);
+    btn.addEventListener('mouseover',function(){ this.style.borderColor='#00e5a0'; this.style.background='#1f1f32'; this.style.transform='translateY(-2px)'; });
+    btn.addEventListener('mouseout',function(){ this.style.borderColor='#252538'; this.style.background='#171726'; this.style.transform=''; });
     btn.addEventListener('click',function(){
       saveCountry(this.getAttribute('data-code'));
       applyCountry(userCountry);
       closeCountryModal();
       toast('\uD83C\uDF0D Personalised for '+userCountry.name);
     });
-  });
+    grid.appendChild(btn);
+  }
   modal.style.transition='opacity 0.22s ease';
   modal.style.opacity='0';
   modal.style.display='flex';
@@ -2286,8 +2289,6 @@ async function openPanel(sym){
     {l:'Volume (24h)', v:d.volume?fmtBig(d.volume):'---'},
     {l:'Market Cap',   v:d.marketCap?fmtBig(d.marketCap):'---'},
   ].map(function(x){ return '<div class="ds-item"><div class="ds-l">'+x.l+'</div><div class="ds-v">'+x.v+'</div></div>'; }).join('');
-
-  var reviews=loadReviews(sym);
 
   _('panelContent').innerHTML=
     '<div class="panel-asset-hd">'+
