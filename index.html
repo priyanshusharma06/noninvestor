@@ -520,7 +520,28 @@ footer a{color:var(--accent);text-decoration:none}
 </head>
 <body>
 
-<nav>
+<!-- COUNTRY SELECTOR MODAL -->
+<div id="countryModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(16px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:22px;width:100%;max-width:560px;padding:clamp(24px,4vw,40px);position:relative;overflow:hidden;max-height:90vh;overflow-y:auto">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--red))"></div>
+
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:2.5rem;margin-bottom:12px">🌍</div>
+      <h2 style="font-family:'Syne',sans-serif;font-size:clamp(1.3rem,3vw,1.7rem);font-weight:800;letter-spacing:-0.02em;margin-bottom:8px">Where are you investing from?</h2>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.65">We will personalise stock suggestions, currency display and broker recommendations for your country.</p>
+    </div>
+
+    <div id="countryGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin-bottom:20px">
+      <!-- populated by JS -->
+    </div>
+
+    <button id="countrySkip" style="width:100%;background:none;border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:11px;border-radius:10px;cursor:pointer;transition:var(--ease);margin-top:4px">
+      Skip — show me everything globally 🌐
+    </button>
+  </div>
+</div>
+
+
   <a class="logo" id="navLogo" href="#">
     <div class="logo-mark">📈</div>Non<em>Investor</em>
   </a>
@@ -530,6 +551,7 @@ footer a{color:var(--accent);text-decoration:none}
     <button class="nav-link" data-page="about">About</button>
     <button class="nav-link" data-page="advertise">Advertise</button>
   </div>
+  <button id="countryBadge" onclick="showCountryModal()" style="display:none;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;padding:6px 12px;border-radius:100px;cursor:pointer;transition:var(--ease);position:absolute;right:60px;white-space:nowrap" title="Change your country">🌍 Global</button>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
@@ -556,7 +578,7 @@ footer a{color:var(--accent);text-decoration:none}
   <section class="hero">
     <div class="hero-badge"><span class="badge-dot"></span> Live Prices &mdash; Free &mdash; No Account Needed</div>
     <h1>Investing made simple<br>for <em>complete beginners</em></h1>
-    <p class="hero-sub">Search any stock, crypto, ETF or mutual fund worldwide. Get live prices and plain-English AI advice. No experience needed &mdash; we explain everything.</p>
+    <p id="heroTagline" class="hero-sub">Search any stock, crypto, ETF or mutual fund worldwide. Get live prices and plain-English AI advice. No experience needed &mdash; we explain everything.</p>
 
     <div class="search-mode-wrap">
       <button class="mode-btn active" data-mode="general">🔍 Search by name</button>
@@ -1049,6 +1071,163 @@ footer a{color:var(--accent);text-decoration:none}
 
 var WORKER = 'https://noninvestor-api.ps06.workers.dev';
 
+/* ── COUNTRY SYSTEM ─────────────────────────────────────────────────── */
+var COUNTRIES = [
+  {code:'IN',flag:'🇮🇳',name:'India',currency:'INR',sym:'₹',
+   stocks:['RELIANCE.NS','TCS.NS','INFY.NS','HDFCBANK.NS','ICICIBANK.NS','WIPRO.NS','BAJFINANCE.NS','TATAMOTORS.NS'],
+   crypto:['BTC','ETH','SOL'],etfs:['VOO','QQQ','GLD'],
+   brokers:{stock:[{nm:'Zerodha',ds:'Most popular in India',url:'https://zerodha.com'},{nm:'Groww',ds:'Beginner friendly',url:'https://groww.in'},{nm:'Angel One',ds:'Full service broker',url:'https://angelone.in'},{nm:'Upstox',ds:'Low cost trades',url:'https://upstox.com'},{nm:'INDmoney',ds:'US stocks from India',url:'https://indmoney.com'},{nm:'Paytm Money',ds:'Easy SIP investing',url:'https://paytmmoney.com'}],
+            crypto:[{nm:'CoinDCX',ds:'India regulated',url:'https://coindcx.com'},{nm:'WazirX',ds:'Popular in India',url:'https://wazirx.com'},{nm:'CoinSwitch',ds:'Easy for beginners',url:'https://coinswitch.co'},{nm:'Binance',ds:'Global exchange',url:'https://binance.com'},{nm:'ZebPay',ds:'India licensed',url:'https://zebpay.com'},{nm:'Mudrex',ds:'Auto invest crypto',url:'https://mudrex.com'}],
+            etf:[{nm:'Groww',ds:'Nifty 50 ETFs',url:'https://groww.in'},{nm:'Zerodha',ds:'Index funds',url:'https://zerodha.com'},{nm:'INDmoney',ds:'US ETFs',url:'https://indmoney.com'},{nm:'Paytm Money',ds:'Mutual funds',url:'https://paytmmoney.com'},{nm:'Kuvera',ds:'Free MF platform',url:'https://kuvera.in'},{nm:'ET Money',ds:'SIP investing',url:'https://etmoney.com'}]},
+   hints:[{l:'🇮🇳 Reliance',s:'RELIANCE.NS'},{l:'💻 TCS',s:'TCS.NS'},{l:'🏦 HDFC Bank',s:'HDFCBANK.NS'},{l:'₿ Bitcoin',s:'BTC'},{l:'🔷 Ethereum',s:'ETH'},{l:'📊 Nifty ETF',s:'NIFTYBEES.NS'},{l:'🧮 Infosys',s:'INFY.NS'},{l:'💳 ICICI Bank',s:'ICICIBANK.NS'}],
+   tagline:'Personalised for Indian investors — NSE/BSE stocks, SIPs and crypto in ₹'},
+
+  {code:'US',flag:'🇺🇸',name:'United States',currency:'USD',sym:'$',
+   stocks:['AAPL','TSLA','NVDA','MSFT','GOOGL','AMZN','META','JPM'],
+   crypto:['BTC','ETH','SOL'],etfs:['VOO','QQQ','SPY','VTI'],
+   brokers:{stock:[{nm:'Robinhood',ds:'Free trades, easy',url:'https://robinhood.com'},{nm:'Fidelity',ds:'No fees, trusted',url:'https://fidelity.com'},{nm:'Charles Schwab',ds:'Full service',url:'https://schwab.com'},{nm:'IBKR',ds:'Low fees worldwide',url:'https://ibkr.com'},{nm:'Webull',ds:'Advanced charts free',url:'https://webull.com'},{nm:'E*Trade',ds:'Morgan Stanley',url:'https://etrade.com'}],
+            crypto:[{nm:'Coinbase',ds:'Easiest for beginners',url:'https://coinbase.com'},{nm:'Kraken',ds:'Trusted & secure',url:'https://kraken.com'},{nm:'Gemini',ds:'US regulated',url:'https://gemini.com'},{nm:'Binance.US',ds:'Low fees',url:'https://binance.us'},{nm:'Crypto.com',ds:'Visa card rewards',url:'https://crypto.com'},{nm:'River',ds:'Bitcoin only, secure',url:'https://river.com'}],
+            etf:[{nm:'Vanguard',ds:'Lowest ETF fees',url:'https://vanguard.com'},{nm:'Fidelity',ds:'Zero fee index funds',url:'https://fidelity.com'},{nm:'Schwab',ds:'No transaction fees',url:'https://schwab.com'},{nm:'Robinhood',ds:'Free ETF trades',url:'https://robinhood.com'},{nm:'M1 Finance',ds:'Auto ETF investing',url:'https://m1.com'},{nm:'Betterment',ds:'Robo advisor ETFs',url:'https://betterment.com'}]},
+   hints:[{l:'🍎 Apple',s:'AAPL'},{l:'⚡ Tesla',s:'TSLA'},{l:'🎮 Nvidia',s:'NVDA'},{l:'📊 S&P 500 ETF',s:'VOO'},{l:'₿ Bitcoin',s:'BTC'},{l:'🔍 Google',s:'GOOGL'},{l:'🪟 Microsoft',s:'MSFT'},{l:'📦 Amazon',s:'AMZN'}],
+   tagline:'Personalised for US investors — live NYSE/NASDAQ prices and AI analysis'},
+
+  {code:'GB',flag:'🇬🇧',name:'United Kingdom',currency:'GBP',sym:'£',
+   stocks:['SHEL.L','HSBA.L','BP.L','GSK.L','ULVR.L','RIO.L','AAPL','MSFT'],
+   crypto:['BTC','ETH','SOL'],etfs:['VOO','ISF.L','VWRL.L','GLD'],
+   brokers:{stock:[{nm:'Freetrade',ds:'Free UK trades',url:'https://freetrade.io'},{nm:'Trading 212',ds:'ISA & free trades',url:'https://trading212.com'},{nm:'Hargreaves Lansdown',ds:'Most trusted UK',url:'https://hl.co.uk'},{nm:'AJ Bell',ds:'Low cost ISA',url:'https://ajbell.co.uk'},{nm:'InvestEngine',ds:'Free ETF ISA',url:'https://investengine.com'},{nm:'Vanguard UK',ds:'Lowest fees',url:'https://vanguardinvestor.co.uk'}],
+            crypto:[{nm:'Coinbase',ds:'FCA registered',url:'https://coinbase.com'},{nm:'Revolut',ds:'Already on your phone',url:'https://revolut.com'},{nm:'Kraken',ds:'Trusted exchange',url:'https://kraken.com'},{nm:'Gemini',ds:'Regulated in UK',url:'https://gemini.com'},{nm:'eToro',ds:'Copy trading',url:'https://etoro.com'},{nm:'Binance',ds:'Largest exchange',url:'https://binance.com'}],
+            etf:[{nm:'Vanguard UK',ds:'Lowest fees',url:'https://vanguardinvestor.co.uk'},{nm:'InvestEngine',ds:'Free ETF ISA',url:'https://investengine.com'},{nm:'Hargreaves Lansdown',ds:'Wide ETF range',url:'https://hl.co.uk'},{nm:'Freetrade',ds:'Free ISA trades',url:'https://freetrade.io'},{nm:'Trading 212',ds:'Stocks and Shares ISA',url:'https://trading212.com'},{nm:'iShares',ds:'BlackRock ETFs',url:'https://ishares.com'}]},
+   hints:[{l:'🛢️ Shell',s:'SHEL.L'},{l:'🏦 HSBC',s:'HSBA.L'},{l:'🍎 Apple',s:'AAPL'},{l:'₿ Bitcoin',s:'BTC'},{l:'📊 FTSE ETF',s:'ISF.L'},{l:'💊 GSK',s:'GSK.L'},{l:'🪟 Microsoft',s:'MSFT'},{l:'🧴 Unilever',s:'ULVR.L'}],
+   tagline:'Personalised for UK investors — ISAs, UK stocks and global ETFs in £'},
+
+  {code:'EU',flag:'🇪🇺',name:'Europe',currency:'EUR',sym:'€',
+   stocks:['ASML','SAP','SIE.DE','LVMH.PA','NESN.SW','AAPL','MSFT','NVDA'],
+   crypto:['BTC','ETH','SOL'],etfs:['VWCE.DE','EXS1.DE','EUNL.DE','GLD'],
+   brokers:{stock:[{nm:'Trade Republic',ds:'€1 trades, popular EU',url:'https://traderepublic.com'},{nm:'DEGIRO',ds:'Lowest fees in Europe',url:'https://degiro.eu'},{nm:'Scalable Capital',ds:'ETF savings plans',url:'https://scalable.capital'},{nm:'eToro',ds:'Copy trading',url:'https://etoro.com'},{nm:'Revolut',ds:'Already on your phone',url:'https://revolut.com'},{nm:'Flatex',ds:'German broker',url:'https://flatex.de'}],
+            crypto:[{nm:'Coinbase',ds:'EU regulated',url:'https://coinbase.com'},{nm:'Bitvavo',ds:'Popular in NL/EU',url:'https://bitvavo.com'},{nm:'Kraken',ds:'Trusted exchange',url:'https://kraken.com'},{nm:'Binance',ds:'Largest exchange',url:'https://binance.com'},{nm:'Bitpanda',ds:'Popular in Austria',url:'https://bitpanda.com'},{nm:'Crypto.com',ds:'Visa card rewards',url:'https://crypto.com'}],
+            etf:[{nm:'Trade Republic',ds:'Free ETF savings plans',url:'https://traderepublic.com'},{nm:'DEGIRO',ds:'Lowest ETF fees EU',url:'https://degiro.eu'},{nm:'Scalable Capital',ds:'ETF plans from €1',url:'https://scalable.capital'},{nm:'iShares',ds:'BlackRock ETFs',url:'https://ishares.com'},{nm:'Vanguard EU',ds:'UCITS ETFs',url:'https://vanguard.eu'},{nm:'Lyxor',ds:'EU ETF provider',url:'https://lyxor.com'}]},
+   hints:[{l:'💡 ASML',s:'ASML'},{l:'🏢 SAP',s:'SAP'},{l:'🍎 Apple',s:'AAPL'},{l:'₿ Bitcoin',s:'BTC'},{l:'📊 World ETF',s:'VWCE.DE'},{l:'⚡ Tesla',s:'TSLA'},{l:'🎮 Nvidia',s:'NVDA'},{l:'🔷 Ethereum',s:'ETH'}],
+   tagline:'Personalised for European investors — EU stocks, UCITS ETFs and crypto in €'},
+
+  {code:'AU',flag:'🇦🇺',name:'Australia',currency:'AUD',sym:'A$',
+   stocks:['BHP.AX','CBA.AX','CSL.AX','ANZ.AX','WES.AX','AAPL','MSFT','NVDA'],
+   crypto:['BTC','ETH','SOL'],etfs:['VAS.AX','A200.AX','NDQ.AX','GLD'],
+   brokers:{stock:[{nm:'CommSec',ds:'Biggest Australian broker',url:'https://commsec.com.au'},{nm:'SelfWealth',ds:'Flat fee trades',url:'https://selfwealth.com.au'},{nm:'Stake',ds:'US & ASX stocks',url:'https://hellostake.com'},{nm:'Superhero',ds:'Low cost ASX',url:'https://superhero.com.au'},{nm:'Pearler',ds:'Long term investing',url:'https://pearler.com'},{nm:'Raiz',ds:'Micro investing',url:'https://raizinvest.com.au'}],
+            crypto:[{nm:'CoinSpot',ds:'Most popular in AU',url:'https://coinspot.com.au'},{nm:'Swyftx',ds:'Easy for beginners',url:'https://swyftx.com'},{nm:'Independent Reserve',ds:'AU regulated',url:'https://independentreserve.com'},{nm:'Coinbase',ds:'Global exchange',url:'https://coinbase.com'},{nm:'Kraken',ds:'Trusted & secure',url:'https://kraken.com'},{nm:'Binance AU',ds:'Largest exchange',url:'https://binance.com'}],
+            etf:[{nm:'Vanguard AU',ds:'VAS and more',url:'https://vanguard.com.au'},{nm:'BetaShares',ds:'NDQ and A200',url:'https://betashares.com.au'},{nm:'iShares AU',ds:'BlackRock ETFs',url:'https://blackrock.com'},{nm:'CommSec',ds:'Easy ETF buying',url:'https://commsec.com.au'},{nm:'Pearler',ds:'Auto ETF investing',url:'https://pearler.com'},{nm:'Raiz',ds:'Micro ETF investing',url:'https://raizinvest.com.au'}]},
+   hints:[{l:'⛏️ BHP',s:'BHP.AX'},{l:'🏦 CBA',s:'CBA.AX'},{l:'🧬 CSL',s:'CSL.AX'},{l:'📊 ASX 200 ETF',s:'A200.AX'},{l:'₿ Bitcoin',s:'BTC'},{l:'🛒 Wesfarmers',s:'WES.AX'},{l:'🍎 Apple',s:'AAPL'},{l:'🎮 Nvidia',s:'NVDA'}],
+   tagline:'Personalised for Australian investors — ASX stocks and ETFs in A$'},
+
+  {code:'CA',flag:'🇨🇦',name:'Canada',currency:'CAD',sym:'C$',
+   stocks:['SHOP.TO','RY.TO','TD.TO','CNR.TO','BCE.TO','AAPL','MSFT','NVDA'],
+   crypto:['BTC','ETH','SOL'],etfs:['XEQT.TO','VEQT.TO','ZSP.TO','GLD'],
+   brokers:{stock:[{nm:'Wealthsimple',ds:'Most popular in Canada',url:'https://wealthsimple.com'},{nm:'Questrade',ds:'Low cost trades',url:'https://questrade.com'},{nm:'TD Direct',ds:'Big bank broker',url:'https://tdwaterhouse.ca'},{nm:'CIBC Investor',ds:'Full service',url:'https://cibc.com'},{nm:'RBC Direct',ds:'Trusted bank broker',url:'https://rbc.com'},{nm:'Qtrade',ds:'Award winning',url:'https://qtrade.ca'}],
+            crypto:[{nm:'Shakepay',ds:'Easiest in Canada',url:'https://shakepay.com'},{nm:'Bitbuy',ds:'FINTRAC registered',url:'https://bitbuy.ca'},{nm:'Coinbase',ds:'Global exchange',url:'https://coinbase.com'},{nm:'Kraken',ds:'Trusted & secure',url:'https://kraken.com'},{nm:'Newton',ds:'Canadian exchange',url:'https://newton.co'},{nm:'NDAX',ds:'Low fees CA',url:'https://ndax.io'}],
+            etf:[{nm:'Wealthsimple',ds:'Free ETF trades',url:'https://wealthsimple.com'},{nm:'Questrade',ds:'Free ETF purchases',url:'https://questrade.com'},{nm:'Vanguard CA',ds:'XEQT and VEQT',url:'https://vanguardcanada.ca'},{nm:'iShares CA',ds:'BlackRock ETFs',url:'https://blackrock.com'},{nm:'BMO ETFs',ds:'ZSP and more',url:'https://bmo.com'},{nm:'TD e-Series',ds:'Low cost index funds',url:'https://td.com'}]},
+   hints:[{l:'🛍️ Shopify',s:'SHOP.TO'},{l:'🏦 RBC',s:'RY.TO'},{l:'🍁 TD Bank',s:'TD.TO'},{l:'📊 XEQT ETF',s:'XEQT.TO'},{l:'₿ Bitcoin',s:'BTC'},{l:'🚂 CN Rail',s:'CNR.TO'},{l:'🍎 Apple',s:'AAPL'},{l:'🎮 Nvidia',s:'NVDA'}],
+   tagline:'Personalised for Canadian investors — TSX stocks and ETFs in C$'},
+
+  {code:'SG',flag:'🇸🇬',name:'Singapore',currency:'SGD',sym:'S$',
+   stocks:['D05.SI','O39.SI','U11.SI','C6L.SI','AAPL','MSFT','TSLA','NVDA'],
+   crypto:['BTC','ETH','SOL'],etfs:['VOO','ES3.SI','CLR.SI','GLD'],
+   brokers:{stock:[{nm:'Tiger Brokers',ds:'Popular in Singapore',url:'https://tigerbrokers.com.sg'},{nm:'Syfe',ds:'Robo advisor SG',url:'https://syfe.com'},{nm:'StashAway',ds:'Smart investing SG',url:'https://stashaway.sg'},{nm:'FSMOne',ds:'SGX and US stocks',url:'https://fsmone.com'},{nm:'Interactive Brokers',ds:'Low fees global',url:'https://ibkr.com'},{nm:'moomoo',ds:'Commission free',url:'https://moomoo.com'}],
+            crypto:[{nm:'Gemini',ds:'MAS licensed',url:'https://gemini.com'},{nm:'Coinbase',ds:'Global exchange',url:'https://coinbase.com'},{nm:'Crypto.com',ds:'Visa card rewards',url:'https://crypto.com'},{nm:'Independent Reserve',ds:'SG regulated',url:'https://independentreserve.com'},{nm:'Binance',ds:'Largest exchange',url:'https://binance.com'},{nm:'OKX',ds:'Popular in Asia',url:'https://okx.com'}],
+            etf:[{nm:'Syfe',ds:'ETF portfolios SG',url:'https://syfe.com'},{nm:'StashAway',ds:'Auto ETF investing',url:'https://stashaway.sg'},{nm:'FSMOne',ds:'STI ETF and more',url:'https://fsmone.com'},{nm:'Tiger Brokers',ds:'US and SG ETFs',url:'https://tigerbrokers.com.sg'},{nm:'Endowus',ds:'CPF and cash ETFs',url:'https://endowus.com'},{nm:'MoneyOwl',ds:'Dimensional funds',url:'https://moneyowl.com.sg'}]},
+   hints:[{l:'🏦 DBS',s:'D05.SI'},{l:'✈️ Singapore Air',s:'C6L.SI'},{l:'📊 STI ETF',s:'ES3.SI'},{l:'₿ Bitcoin',s:'BTC'},{l:'🍎 Apple',s:'AAPL'},{l:'🏦 UOB',s:'U11.SI'},{l:'🔷 Ethereum',s:'ETH'},{l:'🎮 Nvidia',s:'NVDA'}],
+   tagline:'Personalised for Singapore investors — SGX stocks and global ETFs'},
+
+  {code:'XX',flag:'🌐',name:'Other / Global',currency:'USD',sym:'$',
+   stocks:['AAPL','TSLA','NVDA','MSFT','GOOGL','BTC','ETH','VOO'],
+   crypto:['BTC','ETH','SOL','BNB'],etfs:['VOO','QQQ','GLD','SPY'],
+   brokers:{stock:[{nm:'Interactive Brokers',ds:'Best for global investors',url:'https://ibkr.com'},{nm:'eToro',ds:'Copy trading worldwide',url:'https://etoro.com'},{nm:'Trading 212',ds:'Free trades globally',url:'https://trading212.com'},{nm:'Revolut',ds:'Already on your phone',url:'https://revolut.com'},{nm:'Saxo Bank',ds:'Professional platform',url:'https://home.saxo'},{nm:'Swissquote',ds:'Swiss bank quality',url:'https://swissquote.com'}],
+            crypto:[{nm:'Coinbase',ds:'Most trusted globally',url:'https://coinbase.com'},{nm:'Binance',ds:'Largest exchange',url:'https://binance.com'},{nm:'Kraken',ds:'Trusted & secure',url:'https://kraken.com'},{nm:'Crypto.com',ds:'Visa card rewards',url:'https://crypto.com'},{nm:'OKX',ds:'Global exchange',url:'https://okx.com'},{nm:'Bybit',ds:'Popular globally',url:'https://bybit.com'}],
+            etf:[{nm:'Interactive Brokers',ds:'Global ETF access',url:'https://ibkr.com'},{nm:'eToro',ds:'ETFs worldwide',url:'https://etoro.com'},{nm:'Trading 212',ds:'Free ETF investing',url:'https://trading212.com'},{nm:'Vanguard',ds:'Lowest fees',url:'https://vanguard.com'},{nm:'iShares',ds:'BlackRock ETFs global',url:'https://ishares.com'},{nm:'Saxo Bank',ds:'Wide ETF range',url:'https://home.saxo'}]},
+   hints:[{l:'🍎 Apple',s:'AAPL'},{l:'₿ Bitcoin',s:'BTC'},{l:'📊 S&P 500 ETF',s:'VOO'},{l:'⚡ Tesla',s:'TSLA'},{l:'🎮 Nvidia',s:'NVDA'},{l:'🔷 Ethereum',s:'ETH'},{l:'🪟 Microsoft',s:'MSFT'},{l:'📦 Amazon',s:'AMZN'}],
+   tagline:'Global stocks, crypto and ETFs for investors worldwide'},
+];
+
+var userCountry = null;
+
+function getCountry(code){ return COUNTRIES.find(function(c){ return c.code===code; })||COUNTRIES[COUNTRIES.length-1]; }
+
+function saveCountry(code){
+  userCountry=getCountry(code);
+  try{ localStorage.setItem('ni_country',code); } catch(e){}
+}
+
+function loadSavedCountry(){
+  try{ var c=localStorage.getItem('ni_country'); if(c) return c; } catch(e){}
+  return null;
+}
+
+function applyCountry(country){
+  if(!country) return;
+  /* Tagline */
+  var tg=document.getElementById('heroTagline');
+  if(tg) tg.textContent=country.tagline;
+  /* Country badge */
+  var cb=document.getElementById('countryBadge');
+  if(cb){ cb.innerHTML=country.flag+' '+country.name; cb.style.display='inline-flex'; }
+  /* Hints */
+  var hintsEl=document.querySelector('.hints');
+  if(hintsEl && country.hints){
+    hintsEl.innerHTML=country.hints.map(function(h){
+      return '<span class="hint" data-q="'+h.s+'">'+h.l+'</span>';
+    }).join('');
+    hintsEl.querySelectorAll('.hint').forEach(function(h){
+      h.addEventListener('click',function(){ openPanel(this.getAttribute('data-q')); });
+    });
+  }
+  /* Smart search currency */
+  var cur=document.getElementById('smartCurrency');
+  if(cur){ Array.from(cur.options).forEach(function(o){ o.selected=(o.value===country.currency); }); }
+  /* WHERE brokers */
+  if(country.brokers){
+    WHERE.stock=country.brokers.stock;
+    WHERE.crypto=country.brokers.crypto;
+    WHERE.etf=country.brokers.etf;
+  }
+  /* Re-sort trending cards */
+  if(country.stocks){
+    var local=country.stocks.concat(country.crypto||[]).concat(country.etfs||[]);
+    ASSETS.sort(function(a,b){
+      var ai=local.indexOf(a.sym), bi=local.indexOf(b.sym);
+      if(ai===-1&&bi===-1) return 0; if(ai===-1) return 1; if(bi===-1) return -1; return ai-bi;
+    });
+    buildCards();
+  }
+}
+
+function showCountryModal(){
+  var modal=document.getElementById('countryModal'); if(!modal) return;
+  var grid=document.getElementById('countryGrid'); if(!grid) return;
+  grid.innerHTML=COUNTRIES.map(function(c){
+    return '<button class="country-btn" data-code="'+c.code+'" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px 10px;cursor:pointer;transition:var(--ease);text-align:center;font-family:DM Sans,sans-serif;">'+
+      '<div style="font-size:1.8rem;margin-bottom:6px">'+c.flag+'</div>'+
+      '<div style="font-weight:600;font-size:0.82rem;color:var(--text);line-height:1.3">'+c.name+'</div>'+
+      '</button>';
+  }).join('');
+  grid.querySelectorAll('.country-btn').forEach(function(btn){
+    btn.addEventListener('mouseenter',function(){ this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)'; });
+    btn.addEventListener('mouseleave',function(){ this.style.borderColor='var(--border)'; this.style.transform=''; });
+    btn.addEventListener('click',function(){
+      saveCountry(this.getAttribute('data-code'));
+      applyCountry(userCountry);
+      closeCountryModal();
+      toast('🌍 Personalised for '+userCountry.name);
+    });
+  });
+  modal.style.transition='opacity 0.22s ease';
+  modal.style.opacity='0'; modal.style.display='flex';
+  requestAnimationFrame(function(){ modal.style.opacity='1'; });
+}
+
+function closeCountryModal(){
+  var modal=document.getElementById('countryModal');
+  if(modal){ modal.style.opacity='0'; setTimeout(function(){ modal.style.display='none'; },220); }
+}
+/* ── END COUNTRY SYSTEM ─────────────────────────────────────────────── */
+
 var ASSETS = [
   {sym:'AAPL',        name:'Apple Inc.',          type:'stock',  ico:'🍎', desc:'The world\'s most valuable company. Makes iPhones, Macs, and the App Store.'},
   {sym:'TSLA',        name:'Tesla',               type:'stock',  ico:'⚡', desc:'Electric cars and clean energy. Very popular with younger investors.'},
@@ -1331,11 +1510,7 @@ function toast(msg){
   setTimeout(function(){ t.classList.remove('show'); },2800);
 }
 
-/* LOCAL STORAGE for reviews */
-function loadReviews(sym){ try{ var r=localStorage.getItem('rv_'+sym); return r?JSON.parse(r):[]; } catch(e){ return []; } }
-function saveReviews(sym,arr){ try{ localStorage.setItem('rv_'+sym,JSON.stringify(arr)); } catch(e){} }
-function loadLike(sym,idx){ try{ return localStorage.getItem('lk_'+sym+'_'+idx)==='1'; } catch(e){ return false; } }
-function saveLike(sym,idx,v){ try{ localStorage.setItem('lk_'+sym+'_'+idx,v?'1':'0'); } catch(e){} }
+/* LOCAL STORAGE helpers removed — reviews now use Formspree only */
 
 /* SPARKLINE */
 function sparkSVG(pts, up, H){
@@ -1629,15 +1804,57 @@ function buildCards(){
 }
 
 /* LOAD PRICES */
+/* LOAD PRICES — uses live /trending for initial load, then batch refresh */
 async function loadAll(){
   buildCards();
-  var stocks=ASSETS.filter(function(a){ return a.type!=='crypto'; }).map(function(a){ return a.sym; });
-  var cryptos=ASSETS.filter(function(a){ return a.type==='crypto'; }).map(function(a){ return a.sym; });
-  try{ var r=await apiBatch(stocks,cryptos); Object.keys(r).forEach(function(sym){ if(r[sym]&&r[sym].price) liveData[sym]=r[sym]; }); } catch(e){}
+
+  // Try /trending first for fast sorted live data
+  try{
+    var tr = await fetch(WORKER+'/trending');
+    if(tr.ok){
+      var td = await tr.json();
+      if(td.trending && td.trending.length){
+        td.trending.forEach(function(d){
+          if(d.price) liveData[d.symbol] = d;
+        });
+        buildTicker(); buildCards();
+      }
+    }
+  } catch(e){}
+
+  // Then load all assets including country-specific ones
+  var stocks = ASSETS.filter(function(a){ return a.type!=='crypto'; }).map(function(a){ return a.sym; });
+  var cryptos = ASSETS.filter(function(a){ return a.type==='crypto'; }).map(function(a){ return a.sym; });
+  try{
+    var r = await apiBatch(stocks, cryptos);
+    Object.keys(r).forEach(function(sym){ if(r[sym]&&r[sym].price) liveData[sym]=r[sym]; });
+  } catch(e){}
+
   buildTicker(); buildCards(); loadSparks();
+
+  // Refresh every 30 seconds
   setInterval(async function(){
-    try{ var f=await apiBatch(stocks,cryptos); Object.keys(f).forEach(function(sym){ if(f[sym]&&f[sym].price) liveData[sym]=f[sym]; }); buildTicker(); buildCards(); } catch(e){}
-  },60000);
+    try{
+      var stocks2 = ASSETS.filter(function(a){ return a.type!=='crypto'; }).map(function(a){ return a.sym; });
+      var cryptos2 = ASSETS.filter(function(a){ return a.type==='crypto'; }).map(function(a){ return a.sym; });
+      var f = await apiBatch(stocks2, cryptos2);
+      Object.keys(f).forEach(function(sym){ if(f[sym]&&f[sym].price) liveData[sym]=f[sym]; });
+      buildTicker(); buildCards();
+      // Update open panel if visible
+      if(currentPanelSym && document.getElementById('overlay').classList.contains('open')){
+        var d = liveData[currentPanelSym];
+        if(d && d.price){
+          var pp = document.querySelector('.panel-price');
+          var pc = document.querySelector('.panel-chg');
+          if(pp) pp.textContent = fmtPrice(d.price, d.currency||'USD');
+          if(pc){
+            pc.className = 'panel-chg ' + updown(d.changePercent||0);
+            pc.innerHTML = arr(d.changePercent||0) + ' ' + fmtChg(d.changePercent||0);
+          }
+        }
+      }
+    } catch(e){}
+  }, 30000);
 }
 
 async function loadSparks(){
@@ -1949,57 +2166,9 @@ async function renderChart(sym,range,isUp){
 }
 
 /* REVIEWS */
-function renderReviews(sym){
-  var container=_('reviewList'); if(!container) return;
-  var reviews=loadReviews(sym);
-  var ce=_('reviewCount'); if(ce) ce.textContent=reviews.length;
-  if(!reviews.length){ container.innerHTML='<div class="no-reviews">No reviews yet. Be the first to share your view!</div>'; return; }
-  container.innerHTML=reviews.slice().reverse().map(function(rv,idx){
-    var ri=reviews.length-1-idx;
-    var liked=loadLike(sym,ri);
-    var rbCls=rv.sentiment==='bull'?'rb-bull':rv.sentiment==='bear'?'rb-bear':'rb-hold';
-    var rbLabel=rv.sentiment==='bull'?'📈 Bullish':rv.sentiment==='bear'?'📉 Bearish':'➡️ Neutral';
-    var stars=''; for(var s=1;s<=5;s++) stars+=s<=rv.stars?'★':'☆';
-    return '<div class="review-card">'+
-      '<div class="review-card-top">'+
-        '<div class="review-card-left">'+
-          '<div class="review-avatar">'+(rv.name||'A').substring(0,2).toUpperCase()+'</div>'+
-          '<div><div class="review-author">'+rv.name+'</div><div class="review-time">'+timeAgo(rv.ts)+'</div></div>'+
-        '</div>'+
-        '<span class="review-badge '+rbCls+'">'+rbLabel+'</span>'+
-      '</div>'+
-      '<div class="review-stars" style="color:var(--yellow)">'+stars+'</div>'+
-      '<div class="review-text">'+rv.text+'</div>'+
-      '<div class="review-likes"><button class="like-btn'+(liked?' liked':'')+'" data-idx="'+ri+'">👍 Helpful ('+(rv.likes||0)+')</button></div>'+
-    '</div>';
-  }).join('');
-  container.querySelectorAll('.like-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var idx=parseInt(this.getAttribute('data-idx'));
-      var rvs=loadReviews(sym);
-      if(!loadLike(sym,idx)){ rvs[idx].likes=(rvs[idx].likes||0)+1; saveReviews(sym,rvs); saveLike(sym,idx,true); this.classList.add('liked'); this.innerHTML='👍 Helpful ('+rvs[idx].likes+')'; }
-    });
-  });
-}
 
-function submitReview(sym){
-  var nameEl=_('reviewName'),textEl=_('reviewText');
-  var name=nameEl?nameEl.value.trim():'';
-  var text=textEl?textEl.value.trim():'';
-  if(!name){ toast('Please enter your name'); return; }
-  if(!selectedSentiment){ toast('Please select Bullish, Bearish or Neutral'); return; }
-  if(!text||text.length<10){ toast('Please write at least 10 characters'); return; }
-  var rvs=loadReviews(sym);
-  rvs.push({name:name,sentiment:selectedSentiment,stars:selectedStars||3,text:text,ts:Date.now(),likes:0});
-  saveReviews(sym,rvs);
-  if(nameEl) nameEl.value='';
-  if(textEl) textEl.value='';
-  selectedSentiment=''; selectedStars=0;
-  document.querySelectorAll('.sentiment-btn').forEach(function(b){ b.className='sentiment-btn'; });
-  document.querySelectorAll('.star').forEach(function(s){ s.classList.remove('lit'); });
-  toast('Review posted! Thank you.');
-  renderReviews(sym);
-}
+
+
 
 /* DETAIL PANEL */
 async function openPanel(sym){
@@ -2014,6 +2183,9 @@ async function openPanel(sym){
   }
 
   var p=d.changePercent||0,cur=d.currency||'USD';
+  var marketState = d.marketState || 'CLOSED';
+  var stateCol = marketState==='REGULAR'?'var(--accent)':marketState==='PRE'||marketState==='POST'?'var(--yellow)':'var(--text3)';
+  var stateLabel = marketState==='REGULAR'?'🟢 Market Open':marketState==='PRE'?'🟡 Pre-Market':marketState==='POST'?'🟡 After-Hours':'⚫ Market Closed';
   var where=WHERE[a.type]||WHERE.stock;
   var wtbHtml=where.map(function(w){ return '<a class="wtb-card" href="'+w.url+'" target="_blank" rel="noopener"><div class="wtb-nm">'+w.nm+'</div><div class="wtb-ds">'+w.ds+'</div></a>'; }).join('');
   var stats=[
@@ -2036,7 +2208,7 @@ async function openPanel(sym){
       '<div class="panel-price">'+(d.price?fmtPrice(d.price,cur):'---')+'</div>'+
       '<div class="panel-chg '+updown(p)+'">'+arr(p)+' '+fmtChg(p)+'</div>'+
     '</div>'+
-    '<div class="panel-updated">&#x1F7E2; Live data &middot; auto-refreshes every 60 seconds</div>'+
+    '<div class="panel-updated"><span style="color:'+stateCol+'">&#x25CF;</span> '+stateLabel+' &middot; Live data refreshes every 30 seconds</div>'+
 
     /* CHART */
     '<div class="chart-wrap">'+
@@ -2198,7 +2370,27 @@ async function submitAppReview(){
 /* BOOT */
 document.addEventListener('DOMContentLoaded',function(){
 
-  /* HAMBURGER DRAWER */
+  /* COUNTRY MODAL */
+  var _skipBtn = document.getElementById('countrySkip');
+  if(_skipBtn) _skipBtn.addEventListener('click', function(){
+    saveCountry('XX');
+    applyCountry(userCountry);
+    closeCountryModal();
+  });
+
+  /* Show modal on first visit, or restore saved country */
+  var savedCode = loadSavedCountry();
+  if(savedCode){
+    saveCountry(savedCode);
+    applyCountry(userCountry);
+  } else {
+    /* Small delay so page renders first */
+    setTimeout(showCountryModal, 600);
+  }
+
+  /* Country badge click — reopen modal */
+  var _cb = document.getElementById('countryBadge');
+  if(_cb) _cb.addEventListener('click', showCountryModal);
   function openDrawer(){
     _('drawer').classList.add('open');
     _('drawerOverlay').classList.add('open');
