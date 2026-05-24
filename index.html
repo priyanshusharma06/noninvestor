@@ -1254,6 +1254,22 @@ function applyCountry(country){
   if(cur){ Array.from(cur.options).forEach(function(o){ o.selected=(o.value===country.currency); }); }
   /* WHERE brokers */
   if(country.brokers){ WHERE.stock=country.brokers.stock; WHERE.crypto=country.brokers.crypto; WHERE.etf=country.brokers.etf; }
+  /* Update "Invest in India" goal label to match selected country */
+  var indiaBtn = document.querySelector('.goal-btn[data-goal="india"]');
+  if(indiaBtn && country.code !== 'XX'){
+    indiaBtn.querySelector('.goal-label').textContent = 'Invest in '+country.name;
+    indiaBtn.querySelector('.goal-desc').textContent  = country.name+' stocks & funds';
+  } else if(indiaBtn){
+    indiaBtn.querySelector('.goal-label').textContent = 'Invest in India';
+    indiaBtn.querySelector('.goal-desc').textContent  = 'Indian stocks and SIPs';
+  }
+  /* Reset smart search results so they regenerate with new country */
+  var result = document.getElementById('smartResult');
+  if(result && result.classList.contains('show')){
+    result.classList.remove('show');
+    smartPicks = []; smartPage = 0;
+    toast('Country changed — tap Get My AI Recommendations to update picks');
+  }
   /* Re-sort cards */
   if(country.stocks){
     var local=country.stocks.concat(country.crypto||[]).concat(country.etfs||[]);
@@ -2261,17 +2277,86 @@ async function runSmartSearch(){
   var goalLabels = {grow:'grow my money long-term', income:'earn regular income from dividends', safe:'keep my money safe', crypto:'explore cryptocurrency', india:'invest in Indian stocks and SIPs', trade:'do active short-term trading'};
   var riskLabels = {low:'low risk', mid:'medium risk', high:'high risk'};
 
-  smartPicks = (GOAL_PICKS[smartGoal]||{})[smartRisk] || [];
+  /* Get base picks for this goal + risk */
+  var basePicks = (GOAL_PICKS[smartGoal]||{})[smartRisk] || [];
+
+  /* Country-specific local picks to inject at the top */
+  var countryPicks = [];
+  var countryName = 'Global';
+
+  if(userCountry && userCountry.code !== 'XX'){
+    countryName = userCountry.name;
+
+    /* Build local picks from country's stock list */
+    var localStocks = (userCountry.stocks || []).slice(0, 5);
+    var localCrypto = (userCountry.crypto || []).slice(0, 2);
+    var localEtfs   = (userCountry.etfs   || []).slice(0, 2);
+
+    /* Country-specific why/sell/profit/loss text per goal */
+    var localWhy = {
+      grow:   'Top stock in '+countryName+'. Strong long-term growth potential in your home market.',
+      income: 'Popular income-generating asset for '+countryName+' investors. Good dividend history.',
+      safe:   'Blue-chip stock in '+countryName+'. Lower risk, well-established company.',
+      crypto: 'Popular crypto among investors in '+countryName+'. Liquid and well-supported locally.',
+      india:  'Leading stock on NSE/BSE. Core holding for Indian investors.',
+      trade:  'High liquidity in your local market. Good daily trading volume.',
+    };
+    var localSell = 'Hold for 2-3 years minimum if long-term. Review on major earnings announcements.';
+    var localProfit = 'Take partial profits at +20-25%. Let the rest compound.';
+    var localLoss   = 'Down 15%? Check if company fundamentals changed. Hold if business is intact.';
+
+    /* Create pick objects for local stocks */
+    var allLocal = localStocks.concat(
+      smartGoal === 'crypto' ? localCrypto : [],
+      smartGoal === 'grow' || smartGoal === 'safe' || smartGoal === 'income' ? localEtfs : []
+    );
+
+    countryPicks = allLocal.slice(0,4).map(function(sym){
+      /* Check if this sym is already in basePicks */
+      var alreadyIn = basePicks.some(function(p){ return p.sym === sym; });
+      if(alreadyIn) return null;
+      /* Find or create asset entry */
+      var asset = ASSETS.find(function(a){ return a.sym===sym; });
+      if(!asset){
+        ASSETS.push({sym:sym, name:sym, type:sym.endsWith('.NS')||sym.endsWith('.AX')||sym.endsWith('.L')||sym.endsWith('.TO')||sym.endsWith('.SI')?'stock':'stock', ico:'📈', desc:''});
+      }
+      return {
+        sym:    sym,
+        why:    localWhy[smartGoal] || 'Relevant asset for investors in '+countryName+'.',
+        sell:   localSell,
+        profit: localProfit,
+        loss:   localLoss,
+      };
+    }).filter(Boolean);
+  }
+
+  /* Merge: country picks first (up to 4), then fill to 15 with base picks */
+  var merged = countryPicks.slice(0, 4);
+  var usedSyms = merged.map(function(p){ return p.sym; });
+  basePicks.forEach(function(p){
+    if(merged.length < 15 && usedSyms.indexOf(p.sym) === -1){
+      merged.push(p);
+      usedSyms.push(p.sym);
+    }
+  });
+
+  smartPicks = merged;
   smartPage  = 0;
   smartAmount = parseFloat(amount) || 0;
   smartCurrencyCode = currency;
+
+  /* AI prompt — include country context */
+  var countryCtx = (userCountry && userCountry.code !== 'XX')
+    ? ' The user is based in '+countryName+' and prefers investments accessible in their local market.'
+    : '';
 
   var amountStr = amount ? (amount+' '+currency) : 'some money';
   var prompt =
     'You are a friendly financial educator helping a complete beginner in simple English. ' +
     'They want to '+goalLabels[smartGoal]+'. Their risk comfort is '+riskLabels[smartRisk]+'. ' +
-    'They have '+amountStr+' to invest. ' +
+    'They have '+amountStr+' to invest.'+countryCtx+' ' +
     'Give 3-4 sentences of practical honest advice about what kinds of investments suit them. ' +
+    'Mention any country-specific options that are relevant. ' +
     'Plain English only. No jargon. No asterisks. No markdown. Encouraging but realistic.';
 
   var aiText = await callAI(prompt);
@@ -2280,8 +2365,12 @@ async function runSmartSearch(){
   var resultText = _('smartResultText');
   var result     = _('smartResult');
 
-  if(resultHd)   resultHd.textContent   = 'AI Advice for your goal';
-  if(resultText) resultText.textContent = aiText || 'Based on your goal and risk level, here are the best matching options. Use the arrows to browse all 15 picks. Tap any card for live analysis.';
+  var headingLabel = (userCountry && userCountry.code !== 'XX')
+    ? 'AI Advice for '+countryName+' investors'
+    : 'AI Advice for your goal';
+
+  if(resultHd)   resultHd.textContent   = headingLabel;
+  if(resultText) resultText.textContent = aiText || 'Based on your goal, risk level and location, here are the best matching options. Use the arrows to browse all 15 picks. Tap any card for live analysis.';
 
   renderPicksPage(0);
 
