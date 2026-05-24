@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://noninvestor.pages.dev/sitemap.xml
+Sitemap: https://www.noninvestor.com/sitemap.xml
