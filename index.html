@@ -206,9 +206,24 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .logo-mark{width:28px;height:28px;background:var(--accent);border-radius:7px;display:grid;place-items:center;font-size:14px;flex-shrink:0}
 .logo em{font-style:normal;color:var(--accent)}
 .nav-links{display:flex;align-items:center;gap:4px}
-.nav-link{background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.84rem;padding:7px 13px;border-radius:8px;cursor:pointer;transition:var(--ease);white-space:nowrap}
+.nav-link{background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:7px 14px;border-radius:8px;cursor:pointer;transition:var(--ease);white-space:nowrap}
 .nav-link:hover{color:var(--text);background:var(--surface2)}
 .nav-link.active{color:var(--accent)}
+
+/* Country dropdown */
+.country-wrap{position:absolute;right:var(--gutter);display:flex;align-items:center}
+.country-trigger{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;padding:6px 12px;border-radius:100px;cursor:pointer;transition:var(--ease);white-space:nowrap}
+.country-trigger:hover{border-color:var(--accent);color:var(--accent)}
+.country-trigger svg{width:10px;height:10px;flex-shrink:0;transition:var(--ease)}
+.country-trigger.open svg{transform:rotate(180deg)}
+.country-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:var(--surface2);border:1px solid var(--border);border-radius:13px;min-width:210px;max-height:340px;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,0.55);display:none;z-index:999}
+.country-dropdown.open{display:block;animation:fin 0.15s ease}
+.country-dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:var(--ease);font-size:0.84rem;color:var(--text2);border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.country-dd-item:hover{background:rgba(0,229,160,0.07);color:var(--text)}
+.country-dd-item.selected{color:var(--accent);background:rgba(0,229,160,0.05);font-weight:600}
+.country-dd-flag{font-size:1.1rem;flex-shrink:0;width:24px}
+.country-dd-name{flex:1}
+.country-dd-check{color:var(--accent);font-size:0.85rem}
 .page{display:none;position:relative;z-index:1;width:100%}
 .page.active{display:block}
 /* HERO */
@@ -510,11 +525,13 @@ footer a{color:var(--accent);text-decoration:none}
 @media(max-width:860px){
   .hamburger{display:flex}
   .nav-links{display:none}
+  .country-wrap{display:none}
 }
 @media(min-width:861px){
   .hamburger{display:none}
   #drawer{display:none}
   #drawerOverlay{display:none!important}
+  .country-wrap{display:flex}
 }
 </style>
 </head>
@@ -542,6 +559,7 @@ footer a{color:var(--accent);text-decoration:none}
 </div>
 
 
+<nav>
   <a class="logo" id="navLogo" href="#">
     <div class="logo-mark">📈</div>Non<em>Investor</em>
   </a>
@@ -551,7 +569,13 @@ footer a{color:var(--accent);text-decoration:none}
     <button class="nav-link" data-page="about">About</button>
     <button class="nav-link" data-page="advertise">Advertise</button>
   </div>
-  <button id="countryBadge" onclick="showCountryModal()" style="display:none;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;padding:6px 12px;border-radius:100px;cursor:pointer;transition:var(--ease);position:absolute;right:60px;white-space:nowrap" title="Change your country">🌍 Global</button>
+  <div class="country-wrap" id="countryWrap">
+    <button class="country-trigger" id="countryTrigger">
+      <span id="countryBadge">🌍 Global</span>
+      <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg>
+    </button>
+    <div class="country-dropdown" id="countryDropdown"></div>
+  </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
@@ -1162,12 +1186,12 @@ function loadSavedCountry(){
 
 function applyCountry(country){
   if(!country) return;
+  /* Update badge */
+  var cb=document.getElementById('countryBadge');
+  if(cb) cb.textContent=country.flag+' '+country.name;
   /* Tagline */
   var tg=document.getElementById('heroTagline');
   if(tg) tg.textContent=country.tagline;
-  /* Country badge */
-  var cb=document.getElementById('countryBadge');
-  if(cb){ cb.innerHTML=country.flag+' '+country.name; cb.style.display='inline-flex'; }
   /* Hints */
   var hintsEl=document.querySelector('.hints');
   if(hintsEl && country.hints){
@@ -1182,12 +1206,8 @@ function applyCountry(country){
   var cur=document.getElementById('smartCurrency');
   if(cur){ Array.from(cur.options).forEach(function(o){ o.selected=(o.value===country.currency); }); }
   /* WHERE brokers */
-  if(country.brokers){
-    WHERE.stock=country.brokers.stock;
-    WHERE.crypto=country.brokers.crypto;
-    WHERE.etf=country.brokers.etf;
-  }
-  /* Re-sort trending cards */
+  if(country.brokers){ WHERE.stock=country.brokers.stock; WHERE.crypto=country.brokers.crypto; WHERE.etf=country.brokers.etf; }
+  /* Re-sort cards */
   if(country.stocks){
     var local=country.stocks.concat(country.crypto||[]).concat(country.etfs||[]);
     ASSETS.sort(function(a,b){
@@ -1196,16 +1216,60 @@ function applyCountry(country){
     });
     buildCards();
   }
+  /* Update dropdown checkmarks */
+  buildCountryDropdown();
+}
+
+function buildCountryDropdown(){
+  var dd=document.getElementById('countryDropdown');
+  if(!dd) return;
+  dd.innerHTML=COUNTRIES.map(function(c){
+    var isSelected = userCountry && userCountry.code===c.code;
+    return '<button class="country-dd-item'+(isSelected?' selected':'')+'" data-code="'+c.code+'">'+
+      '<span class="country-dd-flag">'+c.flag+'</span>'+
+      '<span class="country-dd-name">'+c.name+'</span>'+
+      '<span class="country-dd-check" style="opacity:'+(isSelected?'1':'0')+'">✓</span>'+
+    '</button>';
+  }).join('');
+  dd.querySelectorAll('.country-dd-item').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      saveCountry(this.getAttribute('data-code'));
+      applyCountry(userCountry);
+      closeCountryDropdown();
+      toast('🌍 Personalised for '+userCountry.name);
+    });
+  });
+}
+
+function openCountryDropdown(){
+  buildCountryDropdown();
+  var dd=document.getElementById('countryDropdown');
+  var tr=document.getElementById('countryTrigger');
+  if(dd) dd.classList.add('open');
+  if(tr) tr.classList.add('open');
+}
+
+function closeCountryDropdown(){
+  var dd=document.getElementById('countryDropdown');
+  var tr=document.getElementById('countryTrigger');
+  if(dd) dd.classList.remove('open');
+  if(tr) tr.classList.remove('open');
+}
+
+function toggleCountryDropdown(){
+  var dd=document.getElementById('countryDropdown');
+  if(dd && dd.classList.contains('open')) closeCountryDropdown();
+  else openCountryDropdown();
 }
 
 function showCountryModal(){
   var modal=document.getElementById('countryModal'); if(!modal) return;
   var grid=document.getElementById('countryGrid'); if(!grid) return;
   grid.innerHTML=COUNTRIES.map(function(c){
-    return '<button class="country-btn" data-code="'+c.code+'" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px 10px;cursor:pointer;transition:var(--ease);text-align:center;font-family:DM Sans,sans-serif;">'+
+    return '<button class="country-btn" data-code="'+c.code+'" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px 10px;cursor:pointer;transition:var(--ease);text-align:center;font-family:DM Sans,sans-serif;color:var(--text);">'+
       '<div style="font-size:1.8rem;margin-bottom:6px">'+c.flag+'</div>'+
-      '<div style="font-weight:600;font-size:0.82rem;color:var(--text);line-height:1.3">'+c.name+'</div>'+
-      '</button>';
+      '<div style="font-weight:600;font-size:0.82rem;line-height:1.3">'+c.name+'</div>'+
+    '</button>';
   }).join('');
   grid.querySelectorAll('.country-btn').forEach(function(btn){
     btn.addEventListener('mouseenter',function(){ this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)'; });
@@ -2388,9 +2452,13 @@ document.addEventListener('DOMContentLoaded',function(){
     setTimeout(showCountryModal, 600);
   }
 
-  /* Country badge click — reopen modal */
-  var _cb = document.getElementById('countryBadge');
-  if(_cb) _cb.addEventListener('click', showCountryModal);
+  /* Country trigger dropdown */
+  var _ct = document.getElementById('countryTrigger');
+  if(_ct) _ct.addEventListener('click', function(e){ e.stopPropagation(); toggleCountryDropdown(); });
+  /* Close dropdown when clicking outside */
+  document.addEventListener('click', function(e){
+    if(!e.target.closest('#countryWrap')) closeCountryDropdown();
+  });
   function openDrawer(){
     _('drawer').classList.add('open');
     _('drawerOverlay').classList.add('open');
