@@ -548,7 +548,7 @@ footer a{color:var(--accent);text-decoration:none}
       <p style="color:var(--text2);font-size:0.9rem;line-height:1.65">We will personalise stock suggestions, currency display and broker recommendations for your country.</p>
     </div>
 
-    <div id="countryGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin-bottom:20px">
+    <div id="countryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
       <!-- populated by JS -->
     </div>
 
@@ -1275,15 +1275,27 @@ function showCountryModal(){
   var html='';
   for(var i=0;i<COUNTRIES.length;i++){
     var c=COUNTRIES[i];
-    html+='<button data-code="'+c.code+'" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:14px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;">'+
-      '<div style="font-size:1.8rem;margin-bottom:6px">'+c.flag+'</div>'+
-      '<div style="font-weight:600;font-size:0.82rem;line-height:1.3">'+c.name+'</div>'+
+    html+='<button data-code="'+c.code+'" style="'+
+      'background:#171726;border:1.5px solid #252538;border-radius:12px;'+
+      'padding:16px 10px;cursor:pointer;text-align:center;'+
+      'font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;'+
+      'flex-direction:column;align-items:center;justify-content:center;gap:6px;">'+
+      '<span style="font-size:2rem;line-height:1;display:block">'+c.flag+'</span>'+
+      '<span style="font-weight:700;font-size:0.88rem;display:block">'+c.name+'</span>'+
     '</button>';
   }
   grid.innerHTML=html;
   grid.querySelectorAll('button[data-code]').forEach(function(btn){
-    btn.addEventListener('mouseover',function(){ this.style.borderColor='#00e5a0'; this.style.transform='translateY(-2px)'; });
-    btn.addEventListener('mouseout',function(){ this.style.borderColor='#252538'; this.style.transform=''; });
+    btn.addEventListener('mouseover',function(){
+      this.style.borderColor='#00e5a0';
+      this.style.background='#1f1f32';
+      this.style.transform='translateY(-2px)';
+    });
+    btn.addEventListener('mouseout',function(){
+      this.style.borderColor='#252538';
+      this.style.background='#171726';
+      this.style.transform='';
+    });
     btn.addEventListener('click',function(){
       saveCountry(this.getAttribute('data-code'));
       applyCountry(userCountry);
@@ -1292,7 +1304,8 @@ function showCountryModal(){
     });
   });
   modal.style.transition='opacity 0.22s ease';
-  modal.style.opacity='0'; modal.style.display='flex';
+  modal.style.opacity='0';
+  modal.style.display='flex';
   requestAnimationFrame(function(){ modal.style.opacity='1'; });
 }
 
