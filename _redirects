@@ -1,3 +1,2 @@
-# Serve static files directly - do not intercept with SPA routing
-/sitemap.xml /sitemap.xml 200
-/robots.txt /robots.txt 200
+/sitemap.xml https://noninvestor-api.ps06.workers.dev/sitemap.xml 200
+/robots.txt https://noninvestor-api.ps06.workers.dev/robots.txt 200
