@@ -1369,26 +1369,39 @@ function toggleCountryDropdown(){
 }
 
 function showCountryModal(){
-  var modal=document.getElementById('countryModal'); if(!modal) return;
-  /* Grid is pre-built in HTML — just attach click handlers and show */
-  var grid=document.getElementById('countryGrid');
-  if(grid && !grid.getAttribute('data-wired')){
-    grid.setAttribute('data-wired','1');
-    grid.querySelectorAll('.cntry-btn').forEach(function(btn){
-      btn.addEventListener('mouseover',function(){ this.style.borderColor='#00e5a0'; this.style.transform='translateY(-2px)'; });
-      btn.addEventListener('mouseout',function(){ this.style.borderColor='#252538'; this.style.transform=''; });
-      btn.addEventListener('click',function(){
-        saveCountry(this.getAttribute('data-code'));
-        applyCountry(userCountry);
-        closeCountryModal();
-        toast('\uD83C\uDF0D Personalised for '+userCountry.name);
-      });
-    });
-  }
+  var modal=document.getElementById('countryModal');
+  if(!modal) return;
   modal.style.transition='opacity 0.22s ease';
   modal.style.opacity='0';
   modal.style.display='flex';
   requestAnimationFrame(function(){ modal.style.opacity='1'; });
+}
+
+/* Wire country grid via event delegation — runs once on DOMContentLoaded */
+function wireCountryGrid(){
+  var grid=document.getElementById('countryGrid');
+  if(!grid) return;
+  /* Event delegation — one listener on the grid, catches all button clicks */
+  grid.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-code]');
+    if(!btn) return;
+    var code = btn.getAttribute('data-code');
+    saveCountry(code);
+    applyCountry(userCountry);
+    closeCountryModal();
+    buildCountryDropdown();
+    buildDrawerCountryGrid();
+    toast('\uD83C\uDF0D Personalised for '+userCountry.name);
+  });
+  /* Skip btn */
+  var skip = document.getElementById('countrySkip');
+  if(skip) skip.addEventListener('click', function(){
+    saveCountry('XX');
+    applyCountry(userCountry);
+    closeCountryModal();
+    buildCountryDropdown();
+    buildDrawerCountryGrid();
+  });
 }
 
 function closeCountryModal(){
@@ -2670,13 +2683,8 @@ async function submitAppReview(){
 /* BOOT */
 document.addEventListener('DOMContentLoaded',function(){
 
-  /* COUNTRY MODAL */
-  var _skipBtn = document.getElementById('countrySkip');
-  if(_skipBtn) _skipBtn.addEventListener('click', function(){
-    saveCountry('XX');
-    applyCountry(userCountry);
-    closeCountryModal();
-  });
+  /* Wire country modal grid via event delegation */
+  wireCountryGrid();
 
   /* Navigate to correct page from URL on first load */
   var initialPage = getPageFromURL();
