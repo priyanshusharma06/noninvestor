@@ -522,6 +522,12 @@ footer a{color:var(--accent);text-decoration:none}
 .drawer-link.active{background:rgba(0,229,160,0.08);color:var(--accent);font-weight:600}
 .drawer-footer{padding:14px 16px;border-top:1px solid var(--border);font-size:0.76rem;color:var(--text3);text-align:center;margin-top:auto}
 
+/* Drawer country buttons */
+.drawer-country-btn{background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:8px 6px;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;color:var(--text2);font-size:0.75rem;font-weight:600;transition:var(--ease);display:flex;align-items:center;gap:6px;width:100%;line-height:1.2}
+.drawer-country-btn:hover{border-color:var(--accent);color:var(--text)}
+.drawer-country-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,0.08)}
+.drawer-country-flag{font-size:1.1rem;flex-shrink:0}
+
 @media(max-width:860px){
   .hamburger{display:flex}
   .nav-links{display:none}
@@ -548,9 +554,7 @@ footer a{color:var(--accent);text-decoration:none}
       <p style="color:var(--text2);font-size:0.9rem;line-height:1.65">We will personalise stock suggestions, currency display and broker recommendations for your country.</p>
     </div>
 
-    <div id="countryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
-      <!-- populated by JS -->
-    </div>
+    <div id="countryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px"><button data-code="IN" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1EE;&#x1F1F3;</span><span style="font-weight:700;font-size:0.82rem">India</span></button><button data-code="US" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1FA;&#x1F1F8;</span><span style="font-weight:700;font-size:0.82rem">United States</span></button><button data-code="GB" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1EC;&#x1F1E7;</span><span style="font-weight:700;font-size:0.82rem">United Kingdom</span></button><button data-code="EU" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1EA;&#x1F1FA;</span><span style="font-weight:700;font-size:0.82rem">Europe</span></button><button data-code="AU" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1E6;&#x1F1FA;</span><span style="font-weight:700;font-size:0.82rem">Australia</span></button><button data-code="CA" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1E8;&#x1F1E6;</span><span style="font-weight:700;font-size:0.82rem">Canada</span></button><button data-code="SG" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1F8;&#x1F1EC;</span><span style="font-weight:700;font-size:0.82rem">Singapore</span></button><button data-code="AE" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1E6;&#x1F1EA;</span><span style="font-weight:700;font-size:0.82rem">UAE / Middle East</span></button><button data-code="NG" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F1F3;&#x1F1EC;</span><span style="font-weight:700;font-size:0.82rem">Nigeria / Africa</span></button><button data-code="XX" class="cntry-btn" style="background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><span style="font-size:1.8rem;line-height:1">&#x1F310;</span><span style="font-weight:700;font-size:0.82rem">Other / Global</span></button></div>
 
     <button id="countrySkip" style="width:100%;background:none;border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:11px;border-radius:10px;cursor:pointer;transition:var(--ease);margin-top:4px">
       Skip — show me everything globally 🌐
@@ -589,12 +593,19 @@ footer a{color:var(--accent);text-decoration:none}
     <button class="drawer-close" id="drawerClose">&#x2715;</button>
   </div>
   <div class="drawer-nav">
-    <button class="drawer-link active" data-page="home">🏠 Home</button>
-    <button class="drawer-link" data-page="smart">🤔 What Should I Buy?</button>
-    <button class="drawer-link" data-page="about">ℹ️ About</button>
-    <button class="drawer-link" data-page="advertise">📢 Advertise</button>
+    <button class="drawer-link active" data-page="home">&#x1F3E0; Home</button>
+    <button class="drawer-link" data-page="smart">&#x1F914; What Should I Buy?</button>
+    <button class="drawer-link" data-page="about">&#x2139;&#xFE0F; About</button>
+    <button class="drawer-link" data-page="advertise">&#x1F4E2; Advertise</button>
   </div>
-  <div class="drawer-footer">Free investing tool for beginners 🌍</div>
+
+  <!-- COUNTRY SELECTOR IN DRAWER -->
+  <div style="padding:14px 12px;border-top:1px solid var(--border);flex-shrink:0">
+    <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:10px">&#x1F30D; Your Country</div>
+    <div id="drawerCountryGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:7px"></div>
+  </div>
+
+  <div class="drawer-footer">Free investing tool for beginners</div>
 </div>
 
 <!-- ===== HOME ===== -->
@@ -709,9 +720,9 @@ footer a{color:var(--accent);text-decoration:none}
           <div class="goal-desc">Bitcoin, Ethereum and more</div>
         </div>
         <div class="goal-btn" data-goal="india">
-          <div class="goal-ico">🇮🇳</div>
-          <div class="goal-label">Invest in India</div>
-          <div class="goal-desc">Indian stocks and SIPs</div>
+          <div class="goal-ico" id="indiaGoalIco">🌍</div>
+          <div class="goal-label" id="indiaGoalLabel">Invest in India</div>
+          <div class="goal-desc" id="indiaGoalDesc">Indian stocks and SIPs</div>
         </div>
         <div class="goal-btn" data-goal="trade">
           <div class="goal-ico">⚡</div>
@@ -1254,14 +1265,22 @@ function applyCountry(country){
   if(cur){ Array.from(cur.options).forEach(function(o){ o.selected=(o.value===country.currency); }); }
   /* WHERE brokers */
   if(country.brokers){ WHERE.stock=country.brokers.stock; WHERE.crypto=country.brokers.crypto; WHERE.etf=country.brokers.etf; }
-  /* Update "Invest in India" goal label to match selected country */
-  var indiaBtn = document.querySelector('.goal-btn[data-goal="india"]');
-  if(indiaBtn && country.code !== 'XX'){
-    indiaBtn.querySelector('.goal-label').textContent = 'Invest in '+country.name;
-    indiaBtn.querySelector('.goal-desc').textContent  = country.name+' stocks & funds';
-  } else if(indiaBtn){
-    indiaBtn.querySelector('.goal-label').textContent = 'Invest in India';
-    indiaBtn.querySelector('.goal-desc').textContent  = 'Indian stocks and SIPs';
+  /* Update "Invest in [Country]" goal button */
+  var gIco   = document.getElementById('indiaGoalIco');
+  var gLabel = document.getElementById('indiaGoalLabel');
+  var gDesc  = document.getElementById('indiaGoalDesc');
+  if(country.code !== 'XX'){
+    if(gIco){
+      /* Build HTML entity string for flag — works on all Android/iOS */
+      var fh=''; for(var _i=0;_i<country.flag.length;_i++){ fh+='&#x'+country.flag.codePointAt(_i).toString(16)+';'; if(country.flag.codePointAt(_i)>0xFFFF) _i++; }
+      gIco.innerHTML = fh;
+    }
+    if(gLabel) gLabel.textContent = 'Invest in '+country.name;
+    if(gDesc)  gDesc.textContent  = country.name+' stocks & funds';
+  } else {
+    if(gIco)   gIco.innerHTML     = '&#x1F30D;';
+    if(gLabel) gLabel.textContent = 'Invest in India';
+    if(gDesc)  gDesc.textContent  = 'Indian stocks and SIPs';
   }
   /* Reset smart search results so they regenerate with new country */
   var result = document.getElementById('smartResult');
@@ -1292,11 +1311,18 @@ function buildCountryDropdown(){
     var isSel=userCountry&&userCountry.code===c.code;
     var btn=document.createElement('button');
     btn.setAttribute('data-code',c.code);
-    btn.style.cssText='display:flex;align-items:center;gap:10px;padding:11px 14px;width:100%;background:'+(isSel?'rgba(0,229,160,0.05)':'none')+';border:none;cursor:pointer;font-family:DM Sans,sans-serif;font-size:0.84rem;color:'+(isSel?'var(--accent)':'var(--text2)')+';transition:background 0.15s;';
     if(isSel) btn.classList.add('selected');
+    btn.style.cssText='display:flex;align-items:center;gap:10px;padding:11px 14px;width:100%;background:'+(isSel?'rgba(0,229,160,0.05)':'none')+';border:none;cursor:pointer;font-family:DM Sans,sans-serif;font-size:0.84rem;color:'+(isSel?'var(--accent)':'var(--text2)')+';transition:background 0.15s;';
+    /* Flag using innerHTML for cross-platform emoji support */
     var flagEl=document.createElement('span');
     flagEl.style.cssText='font-size:1.2rem;width:26px;flex-shrink:0;';
-    flagEl.textContent=c.flag;
+    var fh='';
+    for(var fi=0;fi<c.flag.length;fi++){
+      var cp=c.flag.codePointAt(fi);
+      fh+='&#x'+cp.toString(16)+';';
+      if(cp>0xFFFF) fi++;
+    }
+    flagEl.innerHTML=fh;
     var nameEl=document.createElement('span');
     nameEl.style.cssText='flex:1;text-align:left;';
     nameEl.textContent=c.name;
@@ -1305,7 +1331,7 @@ function buildCountryDropdown(){
     if(isSel){
       var chk=document.createElement('span');
       chk.style.color='var(--accent)';
-      chk.textContent='✓';
+      chk.textContent='\u2713';
       btn.appendChild(chk);
     }
     btn.addEventListener('mouseover',function(){ this.style.background='rgba(0,229,160,0.07)'; this.style.color='var(--text)'; });
@@ -1344,30 +1370,20 @@ function toggleCountryDropdown(){
 
 function showCountryModal(){
   var modal=document.getElementById('countryModal'); if(!modal) return;
-  var grid=document.getElementById('countryGrid'); if(!grid) return;
-  grid.innerHTML='';
-  for(var i=0;i<COUNTRIES.length;i++){
-    var c=COUNTRIES[i];
-    var btn=document.createElement('button');
-    btn.setAttribute('data-code',c.code);
-    btn.style.cssText='background:#171726;border:1.5px solid #252538;border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;font-family:DM Sans,sans-serif;color:#eeeef8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;';
-    var flagSpan=document.createElement('span');
-    flagSpan.style.cssText='font-size:2rem;line-height:1;display:block;';
-    flagSpan.textContent=c.flag;
-    var nameSpan=document.createElement('span');
-    nameSpan.style.cssText='font-weight:700;font-size:0.85rem;display:block;line-height:1.3;';
-    nameSpan.textContent=c.name;
-    btn.appendChild(flagSpan);
-    btn.appendChild(nameSpan);
-    btn.addEventListener('mouseover',function(){ this.style.borderColor='#00e5a0'; this.style.background='#1f1f32'; this.style.transform='translateY(-2px)'; });
-    btn.addEventListener('mouseout',function(){ this.style.borderColor='#252538'; this.style.background='#171726'; this.style.transform=''; });
-    btn.addEventListener('click',function(){
-      saveCountry(this.getAttribute('data-code'));
-      applyCountry(userCountry);
-      closeCountryModal();
-      toast('\uD83C\uDF0D Personalised for '+userCountry.name);
+  /* Grid is pre-built in HTML — just attach click handlers and show */
+  var grid=document.getElementById('countryGrid');
+  if(grid && !grid.getAttribute('data-wired')){
+    grid.setAttribute('data-wired','1');
+    grid.querySelectorAll('.cntry-btn').forEach(function(btn){
+      btn.addEventListener('mouseover',function(){ this.style.borderColor='#00e5a0'; this.style.transform='translateY(-2px)'; });
+      btn.addEventListener('mouseout',function(){ this.style.borderColor='#252538'; this.style.transform=''; });
+      btn.addEventListener('click',function(){
+        saveCountry(this.getAttribute('data-code'));
+        applyCountry(userCountry);
+        closeCountryModal();
+        toast('\uD83C\uDF0D Personalised for '+userCountry.name);
+      });
     });
-    grid.appendChild(btn);
   }
   modal.style.transition='opacity 0.22s ease';
   modal.style.opacity='0';
@@ -1382,7 +1398,41 @@ function closeCountryModal(){
 /* Global handlers for country selection */
 
 
-/* ── END COUNTRY SYSTEM ─────────────────────────────────────────────── */
+function buildDrawerCountryGrid(){
+  var grid = document.getElementById('drawerCountryGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  for(var i=0; i<COUNTRIES.length; i++){
+    var c = COUNTRIES[i];
+    var isActive = userCountry && userCountry.code === c.code;
+    var btn = document.createElement('button');
+    btn.setAttribute('data-code', c.code);
+    btn.className = 'drawer-country-btn' + (isActive ? ' active' : '');
+    /* Flag using innerHTML for cross-platform emoji */
+    var flagSpan = document.createElement('span');
+    flagSpan.className = 'drawer-country-flag';
+    var fh = '';
+    for(var fi=0; fi<c.flag.length; fi++){
+      var cp = c.flag.codePointAt(fi);
+      fh += '&#x' + cp.toString(16) + ';';
+      if(cp > 0xFFFF) fi++;
+    }
+    flagSpan.innerHTML = fh;
+    var nameSpan = document.createElement('span');
+    nameSpan.textContent = c.name;
+    btn.appendChild(flagSpan);
+    btn.appendChild(nameSpan);
+    btn.addEventListener('click', function(){
+      saveCountry(this.getAttribute('data-code'));
+      applyCountry(userCountry);
+      buildDrawerCountryGrid();
+      buildCountryDropdown();
+      closeDrawer();
+      toast('\uD83C\uDF0D Personalised for ' + userCountry.name);
+    });
+    grid.appendChild(btn);
+  }
+}
 
 var ASSETS = [
   {sym:'AAPL',        name:'Apple Inc.',          type:'stock',  ico:'🍎', desc:'The world\'s most valuable company. Makes iPhones, Macs, and the App Store.'},
@@ -2637,6 +2687,8 @@ document.addEventListener('DOMContentLoaded',function(){
   if(savedCode){
     saveCountry(savedCode);
     applyCountry(userCountry);
+    buildCountryDropdown();
+    buildDrawerCountryGrid();
   } else {
     setTimeout(showCountryModal, 600);
   }
@@ -2649,6 +2701,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!e.target.closest('#countryWrap')) closeCountryDropdown();
   });
   function openDrawer(){
+    buildDrawerCountryGrid();
     _('drawer').classList.add('open');
     _('drawerOverlay').classList.add('open');
     document.body.style.overflow='hidden';
