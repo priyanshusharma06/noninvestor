@@ -649,16 +649,26 @@ footer a{color:var(--accent);text-decoration:none}
   </div>
 
   <div class="ad-banner-wrap">
-    <div class="ad-banner" id="bannerAd">
-      <span class="ad-banner-label">Sponsored</span>
-      <div class="ad-banner-content">
-        <div class="ad-banner-icon">🚀</div>
-        <div class="ad-banner-text">
-          <strong>Your Brand Here &mdash; Reach 10,000+ beginner investors</strong>
-          <span>Seen by every visitor &middot; Premium placement &middot; Direct enquiry</span>
+    <div style="position:relative;z-index:1;margin-bottom:clamp(22px,3vw,40px)">
+      <span style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.4);position:absolute;top:-18px;right:4px">Sponsored</span>
+      <div style="width:100%;min-height:120px;background:#1a3d28;display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-sizing:border-box;border-radius:12px;font-family:Arial,sans-serif;gap:16px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:1rem;font-weight:700;color:#ffffff;margin-bottom:3px;">
+            Stop paying $15/month for Shariah stock screening
+          </div>
+          <div style="font-size:0.85rem;color:rgba(255,255,255,0.75);">
+            ShariaCheck is 100% free. No sign-up. No credit card. Ever.
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+          <span style="font-size:12px;color:rgba(255,255,255,0.6);text-decoration:line-through;">$15/mo</span>
+          <a href="https://shariacheck.pages.dev" target="_blank" rel="noopener sponsored"
+            style="background:#4faa68;color:#ffffff;padding:10px 20px;border-radius:8px;
+            font-weight:700;font-size:0.875rem;text-decoration:none;white-space:nowrap;">
+            Get it free
+          </a>
         </div>
       </div>
-      <button class="ad-banner-btn" id="bannerAdBtn">Advertise Here</button>
     </div>
   </div>
 
@@ -2805,8 +2815,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('click',function(e){ if(!e.target.closest('.search-wrap')) _('searchDrop').classList.remove('open'); });
 
   /* Banner */
-  _('bannerAdBtn').addEventListener('click',function(){ showPage('advertise'); });
-  _('bannerAd').addEventListener('click',function(e){ if(e.target!==_('bannerAdBtn')) showPage('advertise'); });
+  /* Banner ad now links directly via <a> tag — no JS listener needed */
 
   /* Package buttons */
   document.querySelectorAll('.pkg-btn').forEach(function(btn){
