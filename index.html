@@ -32,15 +32,12 @@
 <!-- PERFORMANCE HINTS -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://noninvestor-api.ps06.workers.dev">
-<link rel="dns-prefetch" href="https://query1.finance.yahoo.com">
-<link rel="dns-prefetch" href="https://api.coingecko.com">
+
+
 
 <!-- FONTS -->
-<!-- Fonts: preconnect first, then async load to eliminate render blocking -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Fonts: max 3 preconnect hints to avoid PageSpeed warning -->
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap"></noscript>
 
@@ -339,7 +336,7 @@ h1 em{font-style:normal;color:var(--accent)}
 /* HOW IT WORKS */
 .how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:clamp(10px,1.5vw,14px)}
 .how-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:clamp(16px,2.5vw,22px)}
-.how-n{font-family:'Syne',sans-serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:var(--accent);opacity:0.35;margin-bottom:9px}
+.how-n{font-family:'Syne',sans-serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:var(--accent);opacity:0.7;margin-bottom:9px}
 .how-t{font-weight:600;font-size:0.95rem;margin-bottom:6px}
 .how-d{color:var(--text2);font-size:0.84rem;line-height:1.62}
 /* SMART SEARCH */
@@ -549,7 +546,7 @@ footer a{color:var(--accent);text-decoration:none}
 <body>
 
 <!-- COUNTRY SELECTOR MODAL -->
-<div id="countryModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(16px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+<div id="countryModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(16px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity 0.22s ease">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:22px;width:100%;max-width:560px;padding:clamp(24px,4vw,40px);position:relative;overflow:hidden;max-height:90vh;overflow-y:auto">
     <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--red))"></div>
 
@@ -657,19 +654,19 @@ footer a{color:var(--accent);text-decoration:none}
     <div style="position:relative;z-index:1;margin-bottom:clamp(22px,3vw,40px)">
       <div style="width:100%;background:#0d2b1a;border-radius:14px;padding:22px 24px;box-sizing:border-box;border:1px solid #1e4d2c;position:relative;overflow:hidden;font-family:Arial,sans-serif;">
         <div style="position:absolute;top:0;right:0;width:180px;height:100%;background:#112e1c;clip-path:polygon(40px 0,100% 0,100% 100%,0 100%);"></div>
-        <div style="position:absolute;top:14px;right:16px;z-index:2;font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,0.45);">Sponsored</div>
+        <div style="position:absolute;top:14px;right:16px;z-index:2;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aada3;">Sponsored</div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;position:relative;z-index:1;">
           <div style="flex:1;min-width:200px;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
               <div style="width:32px;height:32px;background:#1e5c30;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">&#9775;</div>
               <span style="font-size:13px;font-weight:600;color:#4faa68;letter-spacing:.02em;">ShariaCheck</span>
-              <span style="display:inline-flex;align-items:center;background:#1a4726;color:#4faa68;border-radius:999px;padding:3px 10px;font-size:10px;font-weight:500;">100% Free</span>
+              <span style="display:inline-flex;align-items:center;background:#1a4726;color:#ffffff;border-radius:999px;padding:3px 10px;font-size:10px;font-weight:600;">100% Free</span>
             </div>
             <div style="font-size:18px;font-weight:700;color:#ffffff;line-height:1.3;margin-bottom:8px;">Stop paying $15/month.<br>Get the same screening free.</div>
             <div style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.5;margin-bottom:14px;">Screen any stock worldwide for Shariah compliance. Live prices. AI analysis. No account needed.</div>
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-              <a href="https://shariacheck.pages.dev" target="_blank" rel="noopener sponsored" style="background:#4faa68;color:#fff;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap;">Get it free &#8594;</a>
-              <span style="font-size:12px;color:rgba(255,255,255,0.4);text-decoration:line-through;">Zoya $15/mo</span>
+              <a href="https://shariacheck.pages.dev" target="_blank" rel="noopener sponsored" style="background:#1e6b35;color:#fff;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap;">Get it free &#8594;</a>
+              <span style="font-size:12px;color:rgba(255,255,255,0.65);text-decoration:line-through;">Zoya $15/mo</span>
               <span style="font-size:12px;color:#4faa68;">ShariaCheck $0</span>
             </div>
           </div>
@@ -1171,8 +1168,8 @@ footer a{color:var(--accent);text-decoration:none}
 
 <footer>
   <p><strong>NonInvestor</strong> &mdash; Free live investment screener for beginners &middot;
-  <a href="#" id="footerAbout">About</a> &middot;
-  <a href="#" id="footerAdLink">Advertise</a><br>
+  <a href="#" id="footerAbout" style="text-decoration:underline;text-underline-offset:2px">About</a> &middot;
+  <a href="#" id="footerAdLink" style="text-decoration:underline;text-underline-offset:2px">Advertise</a><br>
   Live prices via Yahoo Finance &amp; CoinGecko &middot; AI by DeepSeek &middot;
   <strong>Not financial advice.</strong> For educational purposes only.</p>
 </footer>
