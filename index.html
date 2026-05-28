@@ -37,7 +37,12 @@
 <link rel="dns-prefetch" href="https://api.coingecko.com">
 
 <!-- FONTS -->
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<!-- Fonts: preconnect first, then async load to eliminate render blocking -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap"></noscript>
 
 <!-- SCHEMA: WebApplication -->
 <script type="application/ld+json">
@@ -193,7 +198,7 @@
 :root{
   --bg:#070711;--surface:#0f0f1c;--surface2:#171726;--surface3:#1f1f32;
   --border:#252538;--accent:#00e5a0;--accent2:#7c6cff;--red:#ff4d6a;
-  --yellow:#ffd166;--text:#eeeef8;--text2:#8888aa;--text3:#55556a;
+  --yellow:#ffd166;--text:#eeeef8;--text2:#a0a0c0;--text3:#6e6e88;
   --r:14px;--ease:0.22s cubic-bezier(0.4,0,0.2,1);
   --gutter:clamp(16px,4vw,52px);
 }
@@ -201,7 +206,7 @@
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.6;min-height:100vh;overflow-x:hidden;width:100%}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 40% at 85% 5%,rgba(0,229,160,0.06) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 5% 90%,rgba(124,108,255,0.07) 0%,transparent 60%);pointer-events:none;z-index:0}
-nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:0 var(--gutter);height:60px;background:rgba(7,7,17,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);width:100%}
+nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:0 var(--gutter);height:60px;min-height:60px;background:rgba(7,7,17,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);width:100%}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;color:var(--text);flex-shrink:0;position:absolute;left:var(--gutter)}
 .logo-mark{width:28px;height:28px;background:var(--accent);border-radius:7px;display:grid;place-items:center;font-size:14px;flex-shrink:0}
 .logo em{font-style:normal;color:var(--accent)}
@@ -580,7 +585,7 @@ footer a{color:var(--accent);text-decoration:none}
     </button>
     <div class="country-dropdown" id="countryDropdown"></div>
   </div>
-  <button class="hamburger" id="hamburger" aria-label="Menu">
+  <button class="hamburger" id="hamburger" aria-label="Open navigation menu" role="button">
     <span></span><span></span><span></span>
   </button>
 </nav>
@@ -999,7 +1004,7 @@ footer a{color:var(--accent);text-decoration:none}
      This section is always visible to Google crawlers.
      It answers real questions people search for and drives organic rankings.
      ===================================================================== -->
-<section id="seo-content" aria-label="Investment information and guides" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none" aria-hidden="false">
+<section id="seo-content" aria-label="Investment information and guides" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;content-visibility:auto" aria-hidden="false">
 <div style="max-width:1100px;margin:0 auto">
 
   <!-- INTRO -->
@@ -2054,19 +2059,19 @@ function buildCards(){
 async function loadAll(){
   buildCards();
 
-  // Try /trending first for fast sorted live data
+  // Try /trending first — silent fail if route not yet deployed
   try{
-    var tr = await fetch(WORKER+'/trending');
-    if(tr.ok){
+    var tr = await fetch(WORKER+'/trending', {signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined});
+    if(tr && tr.ok){
       var td = await tr.json();
-      if(td.trending && td.trending.length){
+      if(td && td.trending && td.trending.length){
         td.trending.forEach(function(d){
-          if(d.price) liveData[d.symbol] = d;
+          if(d && d.price) liveData[d.symbol] = d;
         });
         buildTicker(); buildCards();
       }
     }
-  } catch(e){}
+  } catch(e){ /* trending not available yet — skip silently */ }
 
   // Then load all assets including country-specific ones
   var stocks = ASSETS.filter(function(a){ return a.type!=='crypto'; }).map(function(a){ return a.sym; });
@@ -2603,6 +2608,22 @@ function showPage(name, pushState){
       window.history.pushState({page:name}, '', route);
     }
   }
+  /* Update page title and meta description for each page */
+  var PAGE_TITLES={
+    home:'NonInvestor — Free AI Stock & Crypto Screener | Buy Hold Sell',
+    smart:'What Should I Invest In? Free AI Recommendations — NonInvestor',
+    about:'About NonInvestor — Free Investment Screener for Beginners',
+    advertise:'Advertise on NonInvestor — Reach Beginner Investors Worldwide'
+  };
+  var PAGE_DESCS={
+    home:'Free AI investment screener. Get live Buy/Hold/Sell verdicts on any stock, crypto or ETF worldwide. No account. No subscription. Forever free.',
+    smart:'Tell us your goal and budget. Our AI recommends exactly what to invest in — in plain English. Free, worldwide, no account needed.',
+    about:'NonInvestor is a free investment screener for complete beginners. Compare us vs Yahoo Finance, Bloomberg and Morningstar. Built by Priyanshu Sharma.',
+    advertise:'Reach 10,000+ beginner investors on NonInvestor. View our ad packages starting from $99. Direct enquiry, no middlemen.'
+  };
+  if(PAGE_TITLES[name]) document.title = PAGE_TITLES[name];
+  var metaDesc = document.querySelector('meta[name="description"]');
+  if(metaDesc && PAGE_DESCS[name]) metaDesc.setAttribute('content', PAGE_DESCS[name]);
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='about') renderAppReviews();
 }
@@ -2709,6 +2730,8 @@ async function submitAppReview(){
 
 /* BOOT */
 document.addEventListener('DOMContentLoaded',function(){
+  /* Defer heavy non-critical setup to idle time — improves mobile FCP/LCP */
+  var idleCb = window.requestIdleCallback || function(fn){ setTimeout(fn,1); };
 
   /* Wire country modal grid via event delegation */
   wireCountryGrid();
@@ -2725,7 +2748,12 @@ document.addEventListener('DOMContentLoaded',function(){
     buildCountryDropdown();
     buildDrawerCountryGrid();
   } else {
-    setTimeout(showCountryModal, 600);
+    /* Show modal after page is fully painted — prevents CLS */
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        setTimeout(showCountryModal, 100);
+      });
+    });
   }
 
   /* Country trigger dropdown */
